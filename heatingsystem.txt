@@ -1,0 +1,41 @@
+class SolarHeatingSystem;
+
+	temporal domain natural;
+
+	TD items
+		predicates
+		variables
+
+	TI items
+		consts
+	
+	modules
+		controller: Controller;
+		collector: Collector;
+		tank: Tank;
+		pump: Pump;
+		tap: Tap;		-- user drawing hot water
+		tank_sensor, collector_sensor: Sensor;	-- may not be needed
+	
+	connections {	-- what's with the curly braces!? (pg 125)
+		(controller.pump_control, pump.control),
+		(controller.pump_state, pump.state),
+		(controller.temp_tank, tank_sensor.temp),
+		(controller.temp_collector, collector_sensor.temp),
+		(collector_sensor.temp, collector.temp),
+		(tank_sensor.temp, tank.temp),
+		(pump.a_out_vol, collector.out_vol),
+		(pump.a_out_temp, collector.temp),		-- unlike the sensor, this represents a physical relation
+		(pump.a_in_vol, collector.in_vol),
+		(pump.a_in_temp, collector.in_temp),
+		(pump.b_out_vol, tank.out_vol),
+		(pump.b_out_temp, tank.temp),
+		(pump.b_in_vol, tank.in_vol),
+		(pump.b_in_temp, tank.in_temp),
+	}
+	
+	axioms
+		vars
+			t: real;
+
+end SolarHeatingSystem.

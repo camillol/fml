@@ -1,0 +1,36 @@
+class Controller;
+
+	temporal domain natural;
+
+	TD items
+		predicates
+			pump_control({start, stop});
+			pump_state({on,off});
+		variables
+			temp_tank, temp_collector, delta_temp: real;
+
+	TI items
+		consts
+			delta_low_thresh, delta_high_thresh: real;
+	
+	axioms
+		vars
+			t: real;
+
+		sane_consts:
+			delta_high_thresh > delta_low_thresh > 0
+		
+		D:	-- just defining delta
+			delta_temp = temp_collector - temp_tank
+		
+		-- note: I'm currently assuming the pump can switch on and off within a period
+		-- I think UpToNow(off) looks weird (shouldn't it mention pump_state?), but
+		-- on page 120 of lucidifms they do something similar
+		
+		Start:	-- turn on pump when delta is high enough
+			UpToNow(off) ^ delta_temp > delta_high_thresh -> pump_control(start)
+		
+		Stop:	-- turn off pump when delta is low enough
+			UpToNow(on) ^ delta_temp < delta_low_thresh -> pump_control(stop)
+
+end Controller.
