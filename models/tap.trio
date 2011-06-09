@@ -1,0 +1,19 @@
+class Tap;
+	
+	signature:
+	visible:
+		hot_temp, cold_temp, hot_vol, cold_vol;
+	temporal domain natural;
+
+	TD items
+		variables
+			hot_temp, cold_temp, hot_vol, cold_vol: real;
+	
+	axioms
+		vars
+			t: real;
+
+		SameAmount:	-- making sure that the same amount of water passas through the different pipes
+			hot_vol = cold_vol;
+
+end Tap.
