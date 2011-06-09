@@ -28,7 +28,7 @@ class Water_Container
 		fill_adjusts_temperature_and_volume:
 			fill(vol, temp) -> ∃t, ∃v (
 								UpToNow(temperature(t) ^ volume(v)) ^
-								Becomes(temperature((v/vol)*(temp-t))) ^
+								Becomes(temperature((vol/v)*(temp-t))) ^
 								Becomes(volume(v + vol))
 								)
 								
