@@ -1,6 +1,8 @@
 class Water_Container
 
-	visible fill, drain;
+	visible
+		in_volume, in_temperature,
+		out_volume, out_temperature;
 	temporal domain natural;
 	
 	TD items

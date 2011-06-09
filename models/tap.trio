@@ -1,17 +1,14 @@
 class Tap;
 	
-	signature:
-	visible:
-		hot_temp, cold_temp, hot_vol, cold_vol;
-	temporal domain natural;
-
-	TD items
-		variables
-			hot_temp, cold_temp, hot_vol, cold_vol: real;
+	inherits Pump [redefine SameTemp]
+	
+	TI items
+		const
+			cold_supply_temperature: real;
 	
 	axioms
-
-		SameAmount:	-- making sure that the same amount of water passas through the different pipes
-			hot_vol = cold_vol;
+	
+		SameTemp:
+			out_temperature = cold_supply_temperature
 
 end Tap.

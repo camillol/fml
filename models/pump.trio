@@ -1,6 +1,5 @@
 class Pump;
 	
-	signature:
 	visible:
 		control, state, in_volume, in_temperature, out_volume, out_temperature;
 	temporal domain natural;

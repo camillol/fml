@@ -1,0 +1,12 @@
+class Sensor
+
+	visible
+		temp;
+
+	temporal domain natural;
+
+	TD items
+		variables
+			temp: real;
+
+end Sensor.
