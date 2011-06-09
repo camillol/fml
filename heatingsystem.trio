@@ -8,6 +8,7 @@ class SolarHeatingSystem;
 
 	TI items
 		consts
+			total_volume: real;
 	
 	modules
 		controller: Controller;
@@ -37,5 +38,8 @@ class SolarHeatingSystem;
 	axioms
 		vars
 			t: real;
+
+		NoLeaks:	-- not sure if it makes sense to check this, but it can't hurt
+			tank.volume + collector.volume = total_volume;
 
 end SolarHeatingSystem.
