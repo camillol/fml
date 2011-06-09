@@ -1,0 +1,38 @@
+class Water_Container
+
+	visible fill, drain;
+	temporal domain natural;
+	
+	TD items
+		predicates 
+			fill(real, real);
+			drain(real, real);
+			temperature(real);
+			volume(real);
+			
+	TI items
+		consts
+			max_volume: real;
+			
+	axioms
+		no_state_changes:
+			Alw(temperature(t) -> t > 0 ^ t < 100);
+			
+		volume_within_bounds: 
+			Alw(volume(v) -> v > 0 ^ v <= max_volume);
+			
+		volume_remains_constant:
+			∀t, ∀v (∃t2 (fill(t,v) -> drain(t2, v))) ^
+			∀t, ∀v (∃t2 (drain(t,v) -> fill(t2, v)))
+			
+		fill_adjusts_temperature_and_volume:
+			fill(vol, temp) -> ∃t, ∃v (
+								UpToNow(temperature(t) ^ volume(v)) ^
+								Becomes(temperature((v/vol)*(temp-t))) ^
+								Becomes(volume(v + vol))
+								)
+								
+		drain_adjusts_temperature_and_volume:
+			drain(vol, temp) -> fill(-vol, temp)
+	
+end Water_Container
