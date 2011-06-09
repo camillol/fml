@@ -50,17 +50,31 @@ class Water_Container
 		delta_heat_definition:	-- by default we don't have any other energy input/output
 			delta_heat = 0
 
+		total_out_volume_definition:
+			total_out_volume = out_volume
+		
+		total_in_volume_temperature_product_definition:
+			total_in_volume_temperature_product = in_volume * in_temperature
+
+		total_out_volume_temperature_product_definition:
+			total_out_volume_temperature_product = total_out_volume * temperature
+
 		temperature_change:
 			∃in_volume_now, out_volume_now, volume_now, in_temperature_now, temperature_now (
 				volume = volume_now ^
-				in_volume = in_volume_now ^
-				out_volume = out_volume_now ^
-				in_temperature = in_temperature_now ^
-				temperature = temperature_now ^
+				total_out_volume_temperature_product = total_out_volume_temperature_product_now ^
+				total_in_volume_temperature_product = total_in_volume_temperature_product_now ^
 				Futr(temperature = (
-					( (volume_now - out_volume_now) * temperature_now + in_volume_now * in_temperature_now ) /
-							volume + 
-						delta_heat /(specific_heat * volume_now * density)
+						-- weigthed average of temperatures of volumes which compose the next
+						-- water volume
+						(
+							volume_now * temperature_now
+							- total_out_volume_temperature_product_now
+							+ total_in_volume_temperature_product_now
+						) / volume								-- yes, this is the future volume
+						
+						-- temperature change from external heat exchange (not by water exchange)
+						+ delta_heat / (specific_heat * volume_now * density)
 					, 1)
 			)
 	

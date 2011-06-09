@@ -1,9 +1,16 @@
 class Tank;
-	inherits WaterContainer [redefine delta_volume_definition];
+	inherits WaterContainer [redefine
+		delta_volume_definition,
+		total_out_volume_definition,
+		total_in_volume_temperature_product_definition
+	];
 	
 	variables
 		tap_in_volume, tap_in_temperature,
-		tap_out_volume, tap_out_temperature: real;
+		tap_out_volume, tap_out_temperature,
+		total_out_volume,
+		total_in_volume_temperature_product,
+		total_out_volume_temperature_product: real;
 	
 	axioms
 		no_state_changes_tap:
@@ -16,21 +23,11 @@ class Tank;
 		temperature_out_tap:
 			tap_out_temperature = temperature
 		
-		temperature_change:
-			∃in_volume_now, out_volume_now, volume_now, in_temperature_now, temperature_now (
-				volume = volume_now ^
-				in_volume = in_volume_now ^
-				out_volume = out_volume_now ^
-				in_temperature = in_temperature_now ^
-				temperature = temperature_now ^
-				Futr(temperature = (
-						(
-							(volume_now - out_volume_now - tap_out_volume_now) * temperature_now +
-							in_volume_now * in_temperature_now +
-							tap_in_volume_now * tap_in_temperature_now
-						) / volume								-- yes, this is the future volume	
-						+ delta_heat /(specific_heat * volume_now * density)
-					, 1)
-			)
+		total_out_volume_definition:
+			total_out_volume = out_volume + tap_out_volume
+		
+		total_in_volume_temperature_product_definition:
+			total_in_volume_temperature_product = in_volume * in_temperature +
+							tap_in_volume * tap_in_temperature
 
 end Collector.
