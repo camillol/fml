@@ -1,0 +1,11 @@
+class Collector;
+	inherits WaterContainer [redefine delta_heat_definition];
+	
+	variables
+		sun_heat: real;
+	
+	axioms
+		delta_heat_definition:
+			delta_heat = sun_heat;
+
+end Collector.

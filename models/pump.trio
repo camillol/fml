@@ -2,8 +2,7 @@ class Pump;
 	
 	signature:
 	visible:
-		control, state, collector_out_vol, collector_out_temp, collector_in_vol, collector_in_temp,
-		tank_out_vol, tank_out_temp,  tank_in_vol, tank_in_temp;
+		control, state, in_volume, in_temperature, out_volume, out_temperature;
 	temporal domain natural;
 
 	TD items
@@ -11,31 +10,30 @@ class Pump;
 			control({start, stop});
 			state({on,off});
 		variables
-			collector_out_vol, collector_out_temp, collector_in_vol, collector_in_temp: real;
-			tank_out_vol, tank_out_temp,  tank_in_vol, tank_in_temp: real;
+			in_volume, in_temperature,
+			out_volume, out_temperature: real;
 	TI items
 		consts
-			max_transferrable_volume: real;
+			pump_volume: real;	-- actually a flow, but we assume 1 min time slices
 	
 	axioms
 
 		SameAmount:	-- making sure that the same amount of water passas through the different pipes
-			tank_out_vol = collector_in_vol ^
-			collector_out_vol = tank_in_vol;
+			in_volume = out_volume
+			
 		SameTemp:	-- this is under the assumption that there is no heat loss while water is in the pipes
-			tank_out_temp = collector_in_temp ^
-			collector_out_temp = tank_in_temp;
-		IfStartedOn:
-			control(start) -> state(on);
-		IfStoppedOff:
-			control(stop) -> state(off);
-		IfStartedVolumeMax:
-			state(on) -> ( tank_out_vol = max_transferrable_volume ^
-			collector_in_vol = max_transferrable_volume ^
-			collector_out_vol = max_transferrable_volume ^
-			tank_in_vol = max_transferrable_volume );
-		IfStoppedVolume0:
-			state(off) -> ( tank_out_vol = 0 ^ collector_in_vol = 0 ^
-			collector_out_vol = 0 ^ tank_in_vol = 0 );
+			in_temperature = out_temperature
+		
+		WhenOff:
+			state(off) -> in_volume = 0
+		
+		WhenOn:
+			state(on) -> in_volume = pump_volume
+		
+		Start:
+			UpToNow(off) ^ control(start) -> Until_ei(stop, on)
+
+		Stop:
+			UpToNow(on) ^ control(stop) -> Until_ei(start, off)
 
 end Pump.

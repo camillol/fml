@@ -6,46 +6,57 @@ class Water_Container
 	TD items
 		variables
 			temperature, volume,
-			in_v, in_t,
-			out_v, out_t: real;
+			in_volume, in_temperature,
+			out_volume, out_temperature,
+			delta_heat: real;
 			
 	TI items
 		consts
-			max_volume: real;
+			max_volume,
+			specific_heat, density : real;	-- water properties
 			
 	axioms
 		vars
-			v_now, t_now, in_v_now, in_t_now, out_v_now, out_t_now: real;
+			volume_now, temperature_now,
+			in_volume_now, in_temperature_now,
+			out_volume_now, out_temperature_now: real;
 	
 		no_state_changes:
 			0 < temperature < 100 ^
-			0 < in_t < 100 ^
-			0 < out_t < 100
+			0 < in_temperature < 100 ^
+			0 < out_temperature < 100
 			
 		volume_within_bounds: 
-			0 < volume <= max_volume;
+			0 < volume <= max_volumeolume;
 			
 		volume_remains_constant:
-			∃vnow ( volume = vnow ^ Futr(volume = vnow, 1) )
+			∃vnow ( volume = volume_now ^ Futr(volume = volume_now, 1) )
 		
 		volume_change:
-			∃in_v_now, out_v_now, v_now (
-				volume = v_now ^
-				in_v = in_v_now ^
-				out_v = out_v_now ^
-				Futr(volume = v_now + in_v_now - out_v_now, 1)
+			∃in_volume_now, out_volume_now, volume_now (
+				volume = volume_now ^
+				in_volume = in_volume_now ^
+				out_volume = out_volume_now ^
+				Futr(volume = volume_now + in_volume_now - out_volume_now, 1)
 			)
+		
+		temperature_out:
+			out_temperature = temperature
+		
+		delta_heat_definition:	-- by default we don't have any other energy input/output
+			delta_heat = 0
 
 		temperature_change:
-			∃in_v_now, out_v_now, v_now, in_t_now, t_now (
-				volume = v_now ^
-				in_v = in_v_now ^
-				out_v = out_v_now ^
-				in_t = in_t_now ^
-				temperature = t_now ^
+			∃in_volume_now, out_volume_now, volume_now, in_temperature_now, temperature_now (
+				volume = volume_now ^
+				in_volume = in_volume_now ^
+				out_volume = out_volume_now ^
+				in_temperature = in_temperature_now ^
+				temperature = temperature_now ^
 				Futr(temperature = (
-					(v_now - out_v_now) * t_now + in_v_now * in_t_now ) /
-							(v_now - out_v_now + in_v_now)
+					( (volume_now - out_volume_now) * temperature_now + in_volume_now * in_temperature_now ) /
+							(volume_now - out_volume_now + in_volume_now) + 
+						delta_heat /(specific_heat * volume_now * density)
 					, 1)
 			)
 	
