@@ -25,14 +25,18 @@ class SolarHeatingSystem;
 		(controller.temp_collector, collector_sensor.temp),
 		(collector_sensor.temp, collector.temp),
 		(tank_sensor.temp, tank.temp),
-		(pump.a_out_vol, collector.out_vol),
-		(pump.a_out_temp, collector.temp),		-- unlike the sensor, this represents a physical relation
-		(pump.a_in_vol, collector.in_vol),
-		(pump.a_in_temp, collector.in_temp),
-		(pump.b_out_vol, tank.out_vol),
-		(pump.b_out_temp, tank.temp),
-		(pump.b_in_vol, tank.in_vol),
-		(pump.b_in_temp, tank.in_temp),
+		(pump.collector_out_vol, collector.out_vol),
+		(pump.collector_out_temp, collector.temp),		-- unlike the sensor, this represents a physical relation
+		(pump.collector_in_vol, collector.in_vol),
+		(pump.collector_in_temp, collector.in_temp),
+		(pump.tank_out_vol, tank.out_vol),
+		(pump.tank_out_temp, tank.temp),
+		(pump.tank_in_vol, tank.in_vol),
+		(pump.tank_in_temp, tank.in_temp),
+		(tap.hot_temp, Collector.tap_out_temp),
+		(tap.cold_temp, Collector.tap_in_temp),
+		(tap.hot_vol, Collector.tap_out_vol),
+		(tap.cold_vol, Collector.tap_in_vol)
 	}
 	
 	axioms
