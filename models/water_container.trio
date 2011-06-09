@@ -22,8 +22,8 @@ class Water_Container
 			Alw(volume(v) -> v > 0 ^ v <= max_volume);
 			
 		volume_remains_constant:
-			∀t, ∀v (∃t2 (fill(t,v) -> drain(t2, v))) ^
-			∀t, ∀v (∃t2 (drain(t,v) -> fill(t2, v)))
+			∀t, ∀v (∃t2 (fill(t, v) -> drain(t2, v))) ^
+			∀t, ∀v (∃t2 (drain(t, v) -> fill(t2, v)))
 			
 		fill_adjusts_temperature_and_volume:
 			fill(vol, temp) -> ∃t, ∃v (
