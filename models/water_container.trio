@@ -8,6 +8,7 @@ class Water_Container
 			temperature, volume,
 			in_volume, in_temperature,
 			out_volume, out_temperature,
+			delta_volume,
 			delta_heat: real;
 			
 	TI items
@@ -19,7 +20,8 @@ class Water_Container
 		vars
 			volume_now, temperature_now,
 			in_volume_now, in_temperature_now,
-			out_volume_now, out_temperature_now: real;
+			out_volume_now, out_temperature_now,
+			delta_volume_now: real;
 	
 		no_state_changes:
 			0 < temperature < 100 ^
@@ -32,12 +34,14 @@ class Water_Container
 		volume_remains_constant:
 			∃vnow ( volume = volume_now ^ Futr(volume = volume_now, 1) )
 		
+		delta_volume_definition:
+			delta_volume = in_volume - out_volume
+		
 		volume_change:
 			∃in_volume_now, out_volume_now, volume_now (
 				volume = volume_now ^
-				in_volume = in_volume_now ^
-				out_volume = out_volume_now ^
-				Futr(volume = volume_now + in_volume_now - out_volume_now, 1)
+				delta_volume = delta_volume_now ^
+				Futr(volume = volume_now + delta_volume_now, 1)
 			)
 		
 		temperature_out:
@@ -55,7 +59,7 @@ class Water_Container
 				temperature = temperature_now ^
 				Futr(temperature = (
 					( (volume_now - out_volume_now) * temperature_now + in_volume_now * in_temperature_now ) /
-							(volume_now - out_volume_now + in_volume_now) + 
+							volume + 
 						delta_heat /(specific_heat * volume_now * density)
 					, 1)
 			)

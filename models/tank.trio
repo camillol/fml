@@ -1,0 +1,36 @@
+class Tank;
+	inherits WaterContainer [redefine delta_volume_definition];
+	
+	variables
+		tap_in_volume, tap_in_temperature,
+		tap_out_volume, tap_out_temperature: real;
+	
+	axioms
+		no_state_changes_tap:
+			0 < tap_in_temperature < 100 ^
+			0 < tap_out_temperature < 100
+
+		delta_volume_definition:
+			delta_volume = in_volume - out_volume + tap_in_volume - tap_out_volume
+
+		temperature_out_tap:
+			tap_out_temperature = temperature
+		
+		temperature_change:
+			∃in_volume_now, out_volume_now, volume_now, in_temperature_now, temperature_now (
+				volume = volume_now ^
+				in_volume = in_volume_now ^
+				out_volume = out_volume_now ^
+				in_temperature = in_temperature_now ^
+				temperature = temperature_now ^
+				Futr(temperature = (
+						(
+							(volume_now - out_volume_now - tap_out_volume_now) * temperature_now +
+							in_volume_now * in_temperature_now +
+							tap_in_volume_now * tap_in_temperature_now
+						) / volume								-- yes, this is the future volume	
+						+ delta_heat /(specific_heat * volume_now * density)
+					, 1)
+			)
+
+end Collector.
