@@ -4,37 +4,49 @@ class Water_Container
 	temporal domain natural;
 	
 	TD items
-		predicates 
-			fill(real, real);
-			drain(real, real);
-			temperature(real);
-			volume(real);
+		variables
+			temperature, volume,
+			in_v, in_t,
+			out_v, out_t: real;
 			
 	TI items
 		consts
 			max_volume: real;
 			
 	axioms
+		vars
+			v_now, t_now, in_v_now, in_t_now, out_v_now, out_t_now: real;
+	
 		no_state_changes:
-			Alw(temperature(t) -> t > 0 ^ t < 100) ^
-			Alw(fill(v, t) -> t > 0 ^ t < 100) ^
-			Alw(drain(v, t) -> t > 0 ^ t < 100)
+			0 < temperature < 100 ^
+			0 < in_t < 100 ^
+			0 < out_t < 100
 			
 		volume_within_bounds: 
-			Alw(volume(v) -> v > 0 ^ v <= max_volume);
+			0 < volume <= max_volume;
 			
 		volume_remains_constant:
-			∃t2 (fill(t, v) -> drain(t2, v)) ^
-			∃t2 (drain(t, v) -> fill(t2, v))
-			
-		fill_adjusts_temperature_and_volume:
-			fill(vol, temp) -> ∃t, ∃v (
-								UpToNow(temperature(t) ^ volume(v)) ^
-								Becomes(temperature(t + (vol/v)*(temp-t))) ^
-								Becomes(volume(v + vol))
-								)
-								
-		drain_adjusts_temperature_and_volume:
-			drain(vol, temp) -> fill(-vol, temp)
+			∃vnow ( volume = vnow ^ Futr(volume = vnow, 1) )
+		
+		volume_change:
+			∃in_v_now, out_v_now, v_now (
+				volume = v_now ^
+				in_v = in_v_now ^
+				out_v = out_v_now ^
+				Futr(volume = v_now + in_v_now - out_v_now, 1)
+			)
+
+		temperature_change:
+			∃in_v_now, out_v_now, v_now, in_t_now, t_now (
+				volume = v_now ^
+				in_v = in_v_now ^
+				out_v = out_v_now ^
+				in_t = in_t_now ^
+				temperature = t_now ^
+				Futr(temperature = (
+					(v_now - out_v_now) * t_now + in_v_now * in_t_now ) /
+							(v_now - out_v_now + in_v_now)
+					, 1)
+			)
 	
 end Water_Container

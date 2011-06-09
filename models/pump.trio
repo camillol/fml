@@ -18,26 +18,24 @@ class Pump;
 			max_transferrable_volume: real;
 	
 	axioms
-		vars
-			t: real;
 
 		SameAmount:	-- making sure that the same amount of water passas through the different pipes
-			Alw( tank_out_vol = collector_in_vol ^
-			collector_out_vol = tank_in_vol );
+			tank_out_vol = collector_in_vol ^
+			collector_out_vol = tank_in_vol;
 		SameTemp:	-- this is under the assumption that there is no heat loss while water is in the pipes
-			Alw( tank_out_temp = collector_in_temp ^
-			collector_out_temp = tank_in_temp );
+			tank_out_temp = collector_in_temp ^
+			collector_out_temp = tank_in_temp;
 		IfStartedOn:
-			Alw( control(start) -> state(on) );
+			control(start) -> state(on);
 		IfStoppedOff:
-			Alw( control(stop) -> state(off) );
+			control(stop) -> state(off);
 		IfStartedVolumeMax:
-			Alw( state(on) -> ( tank_out_vol = max_transferrable_volume ^
+			state(on) -> ( tank_out_vol = max_transferrable_volume ^
 			collector_in_vol = max_transferrable_volume ^
 			collector_out_vol = max_transferrable_volume ^
-			tank_in_vol = max_transferrable_volume ) );
+			tank_in_vol = max_transferrable_volume );
 		IfStoppedVolume0:
-			Alw( state(off) -> ( tank_out_vol = 0 ^ collector_in_vol = 0 ^
-			collector_out_vol = 0 ^ tank_in_vol = 0 ) );
+			state(off) -> ( tank_out_vol = 0 ^ collector_in_vol = 0 ^
+			collector_out_vol = 0 ^ tank_in_vol = 0 );
 
 end Pump.

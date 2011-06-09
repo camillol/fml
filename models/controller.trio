@@ -14,8 +14,6 @@ class Controller;
 			delta_low_thresh, delta_high_thresh: real;
 	
 	axioms
-		vars
-			t: real;
 
 		sane_consts:
 			delta_high_thresh > delta_low_thresh > 0

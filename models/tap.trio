@@ -10,10 +10,8 @@ class Tap;
 			hot_temp, cold_temp, hot_vol, cold_vol: real;
 	
 	axioms
-		vars
-			t: real;
 
 		SameAmount:	-- making sure that the same amount of water passas through the different pipes
-			Alw( hot_vol = cold_vol );
+			hot_vol = cold_vol;
 
 end Tap.
