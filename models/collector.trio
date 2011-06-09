@@ -1,6 +1,9 @@
 class Collector;
 	inherits WaterContainer [redefine delta_heat_definition];
 	
+	visible
+		sun_heat;
+	
 	variables
 		sun_heat: real;
 	

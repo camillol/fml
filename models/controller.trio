@@ -1,5 +1,8 @@
 class Controller;
 
+	visible
+		pump_control, pump_state, temp_tank, temp_collector;
+
 	temporal domain natural;
 
 	TD items

@@ -1,5 +1,8 @@
 class SolarHeatingSystem;
 
+	visible
+		sun_heat, tap_control;
+
 	temporal domain natural;
 
 	TD items
@@ -41,6 +44,10 @@ class SolarHeatingSystem;
 
 		(tap.out_volume, tank.tap_in_volume),
 		(tap.out_temperature, tank.tap_in_temperature)
+		
+		-- external interface
+		(sun_heat, collector.sun_heat),
+		(tap_control, tap.control)
 	}
 	
 	axioms

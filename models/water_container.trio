@@ -2,7 +2,8 @@ class Water_Container
 
 	visible
 		in_volume, in_temperature,
-		out_volume, out_temperature;
+		out_volume, out_temperature,
+		volume; -- only exposing volume for the noleaks axiom on the system
 	temporal domain natural;
 	
 	TD items
