@@ -1,7 +1,7 @@
 class SolarHeatingSystem;
 
 	visible
-		sun_heat, tap_control;
+		sun_heat, tap_control, maintain;
 
 	temporal domain natural;
 
@@ -44,10 +44,13 @@ class SolarHeatingSystem;
 
 		(tap.out_volume, tank.tap_in_volume),
 		(tap.out_temperature, tank.tap_in_temperature)
+
+		(maintainer.work, controller.maintainance),
 		
 		-- external interface
 		(sun_heat, collector.sun_heat),
-		(tap_control, tap.control)
+		(tap_control, tap.control),
+		(maintain, maintainer.startwork)
 	}
 	
 	axioms
