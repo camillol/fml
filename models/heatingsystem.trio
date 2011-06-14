@@ -1,7 +1,7 @@
 class SolarHeatingSystem;
 
 	visible
-		sun_heat, tap_control, start_maintenance;
+		sun_heat, tap_control, start_maintenance, cold_supply_temperature;
 
 	temporal domain natural;
 
@@ -50,7 +50,8 @@ class SolarHeatingSystem;
 		-- external interface
 		(sun_heat, collector.sun_heat),
 		(tap_control, tap.control),
-		(start_maintenance, maintainer.startwork)
+		(start_maintenance, maintainer.startwork),
+		(cold_supply_temperature, tap.cold_supply_temperature),
 	}
 	
 	axioms
