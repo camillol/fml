@@ -4,7 +4,7 @@ class Tap;
 	
 	TI items
 		const
-			cold_supply_temperature: real;
+			cold_supply_temperature: real;	-- this may be exposed on the system interface as a variable
 	
 	axioms
 	

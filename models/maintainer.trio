@@ -1,12 +1,12 @@
 class Maintainer;
 	
 	visible:
-		startwork, work;
+		startwork, working;
 
 	TD items
 		predicates
 			startwork; --this is true when the maintainer starts working on the collector			
-			work; -- this is true when the maintainer is working on the collector
+			working; -- this is true when the maintainer is working on the collector
 	TI items
 		consts
 			year, week, worktime: real;	-- year, week and time required to complete the procedure expressed in the system time unit
@@ -15,14 +15,13 @@ class Maintainer;
 		vars
 			t: real;
 
-		no_more_than_once_year:	-- making sure that the maintainer checks the system no more than once per year
-			startwork -> Lasts(¬startwork, year);
 		at_least_once_year:	-- making sure that the maintainer checks the system at least once per year + 1 week
 			startwork -> ∃ t ( year < t < year+week ^ NextTime(startwork, t) );
+		initially_not_working:
+			AlwP(¬startwork) -> ¬working;
 		work_after_start:
-			startwork -> NextTime(¬work, worktime+1);
-		not_working_unless_triggered:
-			¬work -> ∃ t ( t>0 ^ NextTime(startwork, t) ^ Lasts(¬work, t) );
-		
+			startwork -> Lasts(working, worktime);
+		stop_working:
+			Lasted(working, worktime) -> Until_ie(¬working, startwork);
 
 end Maintainer.

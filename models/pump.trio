@@ -30,9 +30,12 @@ class Pump;
 			state(on) -> in_volume = pump_volume
 		
 		Start:
-			UpToNow(off) ^ control(start) -> Until_ei(stop, on)
+			UpToNow(off) ^ control(start) -> Until_ei(control(stop), on)
 
 		Stop:
-			UpToNow(on) ^ control(stop) -> Until_ei(start, off)
+			UpToNow(on) ^ control(stop) -> Until_ei(control(start), off)
+
+		StateUnique:
+			(state(off) ^ !state(on)) v (state(on) ^ !state(off))
 
 end Pump.

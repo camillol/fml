@@ -34,14 +34,14 @@ class Water_Container
 		volume_within_bounds: 
 			0 < volume <= max_volume;
 			
-		volume_remains_constant: --to be checked: vnow is not used!
-			∃vnow ( volume = volume_now ^ Futr(volume = volume_now, 1) )
+		volume_remains_constant:
+			∃volume_now ( volume = volume_now ^ Futr(volume = volume_now, 1) )
 		
 		delta_volume_definition:
 			delta_volume = in_volume - out_volume
 		
-		volume_change: -- I don't think we can use the delta_volume definition for delta_volume_now here
-			∃in_volume_now, out_volume_now, volume_now (
+		volume_change:
+			∃delta_volume_now, volume_now (
 				volume = volume_now ^
 				delta_volume = delta_volume_now ^
 				Futr(volume = volume_now + delta_volume_now, 1)
@@ -62,9 +62,10 @@ class Water_Container
 		total_out_volume_temperature_product_definition:
 			total_out_volume_temperature_product = total_out_volume * temperature
 
-		temperature_change: -- same problem with the _now : are we sure we can use the definitions without the _now for the _now vars as well?
-			∃in_volume_now, out_volume_now, volume_now, in_temperature_now, temperature_now (
+		temperature_change:
+			∃volume_now, temperature_now, total_out_volume_temperature_product_now, total_in_volume_temperature_product_now (
 				volume = volume_now ^
+				temperature = temperature_now ^
 				total_out_volume_temperature_product = total_out_volume_temperature_product_now ^
 				total_in_volume_temperature_product = total_in_volume_temperature_product_now ^
 				Futr(temperature = (
