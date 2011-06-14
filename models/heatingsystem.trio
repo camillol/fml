@@ -60,5 +60,8 @@ class SolarHeatingSystem;
 
 		NoLeaks:	-- not sure if it makes sense to check this, but it can't hurt
 			tank.volume + collector.volume = total_volume;
+		
+		ColdSupplyLiquid:
+			0 < cold_supply_temperature < 100;
 
 end SolarHeatingSystem.
