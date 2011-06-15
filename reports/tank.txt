@@ -1,0 +1,9 @@
+General description
+===================
+
+The tank is the main reservoir of hot water which our users will be using. It is in essence a WaterContainer, but with two extra pipes. The basic WaterContainer already has two pipes, which allows us to connect the tank to the collector, but it also needs to account for the user consuming the water, which is what the extra pipes are for.
+
+User consumption
+================
+
+The user uses water from the tank through the tap_out_volume and tap_out_temperature variables. As a condition of any water container, any water used must be instantly replaced by an equal volume, which the user can do through tap_in_volume and tap_in_temperature. Once those are in place, the way the volume and temperature in the tank change is slightly more complicated. We need to take the extra inputs into account when mixing volumes of water, so Tank redefines the axioms in WaterContainer that relate to the total volume flowing in or out.

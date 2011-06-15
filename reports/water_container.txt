@@ -1,0 +1,18 @@
+General description
+===================
+
+The water container class describes a volume of water at a certain temperature with the ability to add or remove water from it. A water container knows how to mix the water it holds with a given volume of water at a given temperature.
+
+
+Water flow
+==========
+
+All water containers have a constant volume. One may drain water out of a container, but it must be concurrently replaced by an equal volume. This is captured in the volume_remains_constant axiom.
+
+By default water comes from one pipe and drains out of another, but the WaterContainer class is structured so that additional pipes can be attached. This is done through the definition of the axioms delta_volume_definition, total_out_volume_definition (the net amount of volume coming out of the container), and total_in_volume_temperature_product_definition (the sum of the products of each volume coming in and its corresponding temperature). Any subclasses that consider inputs and outputs from extra pipes can redefine these accordingly in order to retain the core functionality of a WaterContainer.
+
+
+Heat exchange
+=============
+
+By default the water container neither receives nor looses energy due to external sources. This is captured in the delta_heat_definition axiom. However, subclasses can redefine it and take into account extra energy inputs.

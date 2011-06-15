@@ -1,0 +1,9 @@
+General description
+===================
+
+The collector is the element that transfers heat from the sun into whatever volume of water it's currently holding. It is in essence a regular WaterContainer, which receives additional heat from an external source.
+
+Heat from the Sun
+=================
+
+In order to account for the heat coming from the sun, all the Collector has to do is to redefine delta_heat_definition and set the heat delta to whatever the current sun energy is.
