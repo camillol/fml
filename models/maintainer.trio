@@ -26,10 +26,7 @@ class Maintainer;
 		initially_not_working:
 			AlwP(¬startwork) -> ¬working;
 			
-		work_after_start:
-			startwork -> Lasts(working, worktime);
-			
-		stop_working:
-			Lasted(working, worktime) -> Until_ie(¬working, startwork);
+		work_period:
+			WithinP(startwork, worktime) <-> working;
 
 end Maintainer.
