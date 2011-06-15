@@ -7,6 +7,24 @@ class Sensor
 
 	TD items
 		variables
-			temp: real;
-
+			temp, thermometer: real;
+			
+		predicates
+			updated(natural);
+			
+	TI items
+		consts
+			polling_interval: natural;
+			
+	axioms
+	
+		updating_is_an_event:
+			∀t (updated(t) -> AlwP(¬updated(t)) ^ AlwF(¬updated(t)));
+			
+		updates_temperature_periodically:
+			Lasted(¬updated, polling_interval) -> ∃ thermometer_now (
+										thermometer_now = thermometer
+										^ Futr(temp = thermometer_now, polling_interval)
+										^ updated;
+										)
 end Sensor.
