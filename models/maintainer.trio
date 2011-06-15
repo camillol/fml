@@ -3,6 +3,8 @@ class Maintainer;
 	visible:
 		startwork, working;
 
+	temporal domain natural;
+
 	TD items
 		predicates
 			startwork; --this is true when the maintainer starts working on the collector			
@@ -14,9 +16,12 @@ class Maintainer;
 	axioms
 		vars
 			t: real;
-
-		at_least_once_year:	-- making sure that the maintainer checks the system at least once per year + 1 week
-			startwork -> ∃ t ( min_maintenance_interval < t < max_maintenance_interval ^ NextTime(startwork, t) );
+			
+		enforce_maximum_interval:
+			Lasted(¬working, max_maintenance_interval) -> startwork
+		
+		enforce_minimum_interval:
+			startwork -> AlwP(¬startwork) v ∃ t ( LastTime(startwork, t) ^ t > min_maintenance_interval )
 			
 		initially_not_working:
 			AlwP(¬startwork) -> ¬working;
