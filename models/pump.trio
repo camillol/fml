@@ -16,6 +16,9 @@ class Pump;
 			pump_volume: real;	-- actually a flow, but we assume 1 min time slices
 	
 	axioms
+	
+		StartOff:	-- let's ask Spoletini
+			AlwP(¬control(start)) -> state(off)
 
 		SameAmount:	-- making sure that the same amount of water passas through the different pipes
 			in_volume = out_volume

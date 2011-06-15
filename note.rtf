@@ -29,6 +29,8 @@ LED manutenzione <-- it's already the maintenance predicate in the system\
 moving axioms to future for optimizing checking\
 \
 \
+another thing we can add: \
+\
 \
 Work for next time:\
 Lydumil: sensor, report on water_container, collector, tank\
@@ -37,12 +39,20 @@ Davide: report on pump, tap, maintainer\
 \
 \
 \
-\
-\
+davide's availability:\
+NOT(\
+	wed 10-12, 14-16\
+	thu 8-10, 14-16\
+)\
+lyudmil's availability: {\field{\*\fldinst{HYPERLINK "https://tungle.me/lyudmilangelov"}}{\fldrslt https://tungle.me/lyudmilangelov}}\
 \
 \
 \
 things to check for verification:\
+\
+- verify that our implicit enforcement of controller update is sufficient (say comment)\
+- verify that the controller cannot set pump_control(start) and pump_control(stop) at the same time\
+\
 \
 if the tank has hot enough water, and the \
 \

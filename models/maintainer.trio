@@ -9,18 +9,21 @@ class Maintainer;
 			working; -- this is true when the maintainer is working on the collector
 	TI items
 		consts
-			year, week, worktime: real;	-- year, week and time required to complete the procedure expressed in the system time unit
-	
+			min_maintenance_interval, max_maintenance_interval, worktime: real;	-- year, week and time required to complete the procedure expressed in the system time unit
+			
 	axioms
 		vars
 			t: real;
 
 		at_least_once_year:	-- making sure that the maintainer checks the system at least once per year + 1 week
-			startwork -> ∃ t ( year < t < year+week ^ NextTime(startwork, t) );
+			startwork -> ∃ t ( min_maintenance_interval < t < max_maintenance_interval ^ NextTime(startwork, t) );
+			
 		initially_not_working:
 			AlwP(¬startwork) -> ¬working;
+			
 		work_after_start:
 			startwork -> Lasts(working, worktime);
+			
 		stop_working:
 			Lasted(working, worktime) -> Until_ie(¬working, startwork);
 

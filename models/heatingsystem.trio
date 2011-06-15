@@ -19,16 +19,16 @@ class SolarHeatingSystem;
 		tank: Tank;
 		pump: Pump;
 		tap: Tap;		-- user drawing hot water
-		tank_sensor, collector_sensor: Sensor;	-- may not be needed
+		tank_sensor, collector_sensor: Sensor;
 	
 	connections {	-- what's with the curly braces!? (pg 125)
 		(controller.pump_control, pump.control),
 		(controller.pump_state, pump.state),
-		(controller.temp_tank, tank_sensor.temp),
-		(controller.temp_collector, collector_sensor.temp),
+		(controller.temp_tank, tank_sensor.temp_reading),
+		(controller.temp_collector, collector_sensor.temp_reading),
 		
-		(collector_sensor.temp, collector.out_temperature),
-		(tank_sensor.temp, tank.out_temperature),
+		(collector_sensor.thermometer, collector.out_temperature),
+		(tank_sensor.thermometer, tank.out_temperature),
 		
 		(pump.in_volume, tank.out_volume),
 		(pump.in_temperature, tank.out_temperature),	-- unlike the sensor, this represents a physical relation
