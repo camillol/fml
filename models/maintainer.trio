@@ -21,12 +21,15 @@ class Maintainer;
 			Lasted(¬working, max_maintenance_interval) -> startwork;
 		
 		enforce_minimum_interval:
-			startwork -> AlwP(¬startwork) v ∃ t ( LastTime(startwork, t) ^ t > min_maintenance_interval );
+			startwork -> Lasted(¬startwork, min_maintenance_interval);
 			
 		initially_not_working:
 			AlwP(¬startwork) -> ¬working;
 			
 		work_period:
 			WithinP(startwork, worktime) <-> working;
+
+		sane_times:
+			worktime < min_maintenance_interval;
 
 end Maintainer.
