@@ -1,7 +1,7 @@
 class Controller;
 
 	visible
-		pump_control, pump_state, maintainance, temp_tank, temp_collector;
+		pump_control, pump_state, maintenance, temp_tank, temp_collector;
 
 	temporal domain natural;
 
@@ -9,7 +9,7 @@ class Controller;
 		predicates
 			pump_control({start, stop});
 			pump_state({on,off});
-			maintainance;
+			maintenance;
 		variables
 			temp_tank, temp_collector, delta_temp: real;
 
@@ -36,11 +36,11 @@ class Controller;
 		
 		-- should we break up the double implication?
 		Start:	-- turn on pump when delta is high enough and the system isn't in maintenance mode
-			UpToNow(pump_state(off)) ^ delta_temp > delta_high_thresh ^ ¬maintainance <->
+			UpToNow(pump_state(off)) ^ delta_temp > delta_high_thresh ^ ¬maintenance <->
 				pump_control(start)
 		
 		Stop:	-- turn off pump when delta is low enough or the system is in maintenance mode
-			UpToNow(pump_state(on)) ^ ( delta_temp < delta_low_thresh v maintainance ) <->
+			UpToNow(pump_state(on)) ^ ( delta_temp < delta_low_thresh v maintenance ) <->
 				pump_control(stop)
 
 end Controller.

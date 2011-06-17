@@ -45,7 +45,7 @@ class SolarHeatingSystem;
 		(tap.out_volume, tank.tap_in_volume),
 		(tap.out_temperature, tank.tap_in_temperature)
 
-		(maintainer.working, controller.maintainance),
+		(maintainer.working, controller.maintenance),
 		
 		-- external interface
 		(sun_heat, collector.sun_heat),

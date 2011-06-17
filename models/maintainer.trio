@@ -18,10 +18,10 @@ class Maintainer;
 			t: real;
 			
 		enforce_maximum_interval:
-			Lasted(¬working, max_maintenance_interval) -> startwork;
+			Lasted_ee(¬working, max_maintenance_interval) -> startwork;
 		
 		enforce_minimum_interval:
-			startwork -> Lasted(¬startwork, min_maintenance_interval);
+			startwork -> Lasted_ee(¬startwork, min_maintenance_interval);
 			
 		initially_not_working:
 			AlwP(¬startwork) -> ¬working;
