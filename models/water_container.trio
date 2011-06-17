@@ -78,7 +78,7 @@ class Water_Container
 						) / volume								-- yes, this is the future volume
 						
 						-- temperature change from external heat exchange (not by water exchange)
-						+ delta_heat / (specific_heat * volume_now * density)
+						+ delta_heat / (specific_heat * volume * density)
 					, 1)
 			)
 	

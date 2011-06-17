@@ -30,4 +30,4 @@ class Tank;
 			total_in_volume_temperature_product = in_volume * in_temperature +
 							tap_in_volume * tap_in_temperature
 
-end Collector.
+end Tank.

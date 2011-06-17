@@ -22,19 +22,9 @@ class Controller;
 		sane_consts:
 			delta_high_thresh > delta_low_thresh > 0
 		
-		D:	-- just defining delta
+		define_delta:
 			delta_temp = temp_collector - temp_tank
 		
-		-- note: I'm currently assuming the pump can switch on and off within a period
-		-- I think UpToNow(off) looks weird (shouldn't it mention pump_state?), but
-		-- on page 120 of lucidifms they do something similar
-		
-		-- right now it's implicit that the controller takes action only when the sensors update
-		-- (because if the threshold is crossed the control signal is switched, and then UpToNow(_)
-		-- does not hold until the sensor updates again).
-		-- should we make it explicit by adding a ^ update term to the antecedent?
-		
-		-- should we break up the double implication?
 		Start:	-- turn on pump when delta is high enough and the system isn't in maintenance mode
 			UpToNow(pump_state(off)) ^ delta_temp > delta_high_thresh ^ ¬maintenance <->
 				pump_control(start)

@@ -8,10 +8,10 @@ class Maintainer;
 	TD items
 		predicates
 			startwork; --this is true when the maintainer starts working on the collector			
-			working; -- this is true when the maintainer is working on the collector
+			working; -- this is true while the maintainer is working on the collector
 	TI items
 		consts
-			min_maintenance_interval, max_maintenance_interval, worktime: real;	-- year, week and time required to complete the procedure expressed in the system time unit
+			min_maintenance_interval, max_maintenance_interval, worktime: real;
 			
 	axioms
 		vars
@@ -27,7 +27,7 @@ class Maintainer;
 			AlwP(¬startwork) -> ¬working;
 			
 		work_period:
-			WithinP(startwork, worktime) <-> working;
+			WithinP_ei(startwork, worktime) <-> working;
 
 		sane_times:
 			worktime < min_maintenance_interval;

@@ -21,7 +21,7 @@ class SolarHeatingSystem;
 		tap: Tap;		-- user drawing hot water
 		tank_sensor, collector_sensor: Sensor;
 	
-	connections {	-- what's with the curly braces!? (pg 125)
+	connections {
 		(controller.pump_control, pump.control),
 		(controller.pump_state, pump.state),
 		(controller.temp_tank, tank_sensor.temp_reading),
@@ -31,7 +31,7 @@ class SolarHeatingSystem;
 		(tank_sensor.thermometer, tank.out_temperature),
 		
 		(pump.in_volume, tank.out_volume),
-		(pump.in_temperature, tank.out_temperature),	-- unlike the sensor, this represents a physical relation
+		(pump.in_temperature, tank.out_temperature),
 
 		(pump.out_volume, collector.in_volume),
 		(pump.out_temperature, collector.in_temperature),
@@ -58,7 +58,7 @@ class SolarHeatingSystem;
 		vars
 			t: real;
 
-		NoLeaks:	-- not sure if it makes sense to check this, but it can't hurt
+		NoLeaks:
 			tank.volume + collector.volume = total_volume;
 		
 		ColdSupplyLiquid:

@@ -13,17 +13,17 @@ class Pump;
 			out_volume, out_temperature: real;
 	TI items
 		consts
-			pump_volume: real;	-- actually a flow, but we assume 1 min time slices
+			pump_volume: real;
 	
 	axioms
 	
-		StartOff:	-- let's ask Spoletini
+		StartOff:
 			AlwP(¬control(start)) -> state(off)
 
-		SameAmount:	-- making sure that the same amount of water passas through the different pipes
+		SameAmount:
 			in_volume = out_volume
 			
-		SameTemp:	-- this is under the assumption that there is no heat loss while water is in the pipes
+		SameTemp:
 			in_temperature = out_temperature
 		
 		WhenOff:
@@ -33,12 +33,12 @@ class Pump;
 			state(on) -> in_volume = pump_volume
 		
 		Start:
-			UpToNow(off) ^ control(start) -> Until_ei(control(stop), on)
+			UpToNow(state(off)) ^ control(start) -> Until_ei(control(stop), state(on))
 
 		Stop:
-			UpToNow(on) ^ control(stop) -> Until_ei(control(start), off)
+			UpToNow(state(on)) ^ control(stop) -> Until_ei(control(start), state(off))
 
 		StateUnique:
-			(state(off) ^ !state(on)) v (state(on) ^ !state(off))
+			(state(off) ^ ¬state(on)) v (state(on) ^ ¬state(off))
 
 end Pump.
