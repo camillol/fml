@@ -1,0 +1,322 @@
+variables
+	pump_start:[0..1], pump_stop:[0..1], pump_on:[0..1], pump_off:[0..1],
+	tap_on:[0..1],
+
+	temp_tank:[1..5], temp_collector:[1..5], delta_temp:[0..2],
+	pump_in_volume:[0..1], pump_in_temperature:[1..5], pump_out_volume:[0..1], pump_out_temperature:[1..5],	
+
+	collector_temperature:[1..5], collector_volume:[9..11],
+	collector_out_volume:[0..1], collector_out_temperature:[1..5],
+	collector_delta_volume:[-1..1], sun_heat:[0..2],
+	collector_total_in_volume_temperature_product:[0..5],
+	collector_total_out_volume_temperature_product:[0..5],
+	collector_temp_variation:[-2..4],
+	collector_temp_variation_bs:[-2..2],
+
+			tank_temperature:[1..5], tank_volume:[19..21],
+			tank_delta_volume_A:[-1..1],
+			tank_delta_volume_B:[-1..1],
+			tank_delta_volume:[-2..2],
+		tank_total_in_volume_temperature_product:[0..5],
+	tank_total_out_volume_temperature_product:[0..5],
+	tank_total_in_volume_temperature_product_A:[0..5],
+	tank_total_in_volume_temperature_product_B:[0..5],
+	tank_temp_variation:[-2..2],
+
+	tap_in_volume:[0..1], tap_out_volume:[0..1],
+	tap_in_temperature:[1..5], tap_out_temperature:[1..5],
+
+						update:[0..1]
+	
+
+constants
+	DELTA_LOW = 0, DELTA_MEDIUM = 1, DELTA_HIGH = 2, PUMP_VOLUME=1, COLD_SUPPLY_TEMPERATURE=1, TAP_VOLUME=1,
+	COLLECTOR_MAX_VOLUME=10, WATER_SPECIFIC_HEAT=1, WATER_DENSITY=1, TANK_MAX_VOLUME=20,
+				POLLING_INTERVAL=3
+
+axioms
+	
+	controller_define_delta:
+		(temp_collector = 5 -> (
+			(temp_tank = 1 | temp_tank = 2 | temp_tank = 3) -> delta_temp = DELTA_HIGH &
+			(temp_tank = 4) -> delta_temp = DELTA_MEDIUM &
+			(temp_tank = 5) -> delta_temp = DELTA_LOW
+		)) &
+		(temp_collector = 4 -> (
+			(temp_tank = 1 | temp_tank = 2) -> delta_temp = DELTA_HIGH &
+			(temp_tank = 3) -> delta_temp = DELTA_MEDIUM &
+			(temp_tank = 4 | temp_tank = 5) -> delta_temp = DELTA_LOW
+		)) &
+		(temp_collector = 3 -> (
+			(temp_tank = 1) -> delta_temp = DELTA_HIGH &
+			(temp_tank = 2) -> delta_temp = DELTA_MEDIUM &
+			(temp_tank = 3 | temp_tank = 4 | temp_tank = 5) -> delta_temp = DELTA_LOW
+		)) &
+		(temp_collector = 2 -> (
+			(temp_tank = 1) -> delta_temp = DELTA_MEDIUM &
+			(temp_tank = 2 | temp_tank = 3 | temp_tank = 4 | temp_tank = 5) -> delta_temp = DELTA_LOW
+		)) &
+		(temp_collector = 1 -> delta_temp = DELTA_LOW);
+	
+	controller_start:
+		UpToNow(pump_off=1) & (delta_temp = DELTA_HIGH) <-> pump_start=1;
+	
+	controller_stop:
+		UpToNow(pump_on=1) & (delta_temp = DELTA_LOW) <-> pump_stop=1;
+
+	pump_start_off:
+		AlwP(pump_start=0) -> pump_off=1;
+
+	pump_same_amount:
+		pump_in_volume = pump_out_volume;
+			
+	pump_same_temp:
+		pump_in_temperature = pump_out_temperature;
+		
+	pump_when_off:
+		pump_off=1 -> pump_in_volume = 0;
+		
+	pump_when_on:
+		pump_on=1 -> pump_in_volume = PUMP_VOLUME;
+		
+	pump_start:
+		UpToNow(pump_off=1) & pump_start=1 -> Until_w(pump_on=1, pump_stop=1);
+
+	pump_stop:
+		UpToNow(pump_on=1) & pump_stop=1 -> Until_w(pump_off=1, pump_start=1);
+
+	pump_state_unique:
+		(pump_off=1 & pump_on=0) | (pump_on=1 & pump_off=0);
+
+	tap_same_amount:
+		tap_in_volume = tap_out_volume;
+		
+	tap_temp:
+		tap_out_temperature = COLD_SUPPLY_TEMPERATURE;
+		
+	tap_when_off:
+		tap_on=0 -> tap_in_volume = 0;
+		
+	tap_when_on:
+		tap_on=1 -> tap_in_volume = TAP_VOLUME;
+
+
+		collector_no_state_changes:
+			0 < collector_temperature & collector_temperature < 100 &
+			0 < pump_out_temperature & pump_out_temperature < 100 &
+			0 < collector_out_temperature & collector_out_temperature < 100;
+			
+		collector_volume_within_bounds: 
+			0 < collector_volume & collector_volume <= COLLECTOR_MAX_VOLUME;
+
+		collector_delta_volume_definition:
+			(pump_out_volume = collector_out_volume -> collector_delta_volume = 0) &
+			(pump_out_volume = 1 & collector_out_volume = 0 -> collector_delta_volume = 1) &
+			(pump_out_volume = 0 & collector_out_volume = 1 -> collector_delta_volume = -1);
+		
+		collector_temperature_out:
+			collector_out_temperature = collector_temperature;
+		
+		collector_total_in_volume_temperature_product_definition:
+			(pump_out_volume = 1 -> collector_total_in_volume_temperature_product = pump_out_temperature) &
+			(pump_out_volume = 0 -> collector_total_in_volume_temperature_product = 0);
+
+		collector_total_out_volume_temperature_product_definition:
+			(collector_out_volume = 1 -> collector_total_out_volume_temperature_product = collector_temperature) &
+			(collector_out_volume = 0 -> collector_total_out_volume_temperature_product = 0);
+
+		collector_temperature_variation_before_sun:
+			(collector_total_out_volume_temperature_product = collector_total_in_volume_temperature_product ->
+				collector_temp_variation_bs = 0) &
+			(collector_total_out_volume_temperature_product > collector_total_in_volume_temperature_product ->
+				collector_temp_variation_bs = -2) &
+			(collector_total_out_volume_temperature_product < collector_total_in_volume_temperature_product ->
+				collector_temp_variation_bs = 2);
+
+		collector_temperature_variation:
+			(sun_heat = 0 -> (collector_temp_variation = collector_temp_variation_bs)) &
+			(sun_heat = 1 -> (
+				collector_temp_variation_bs = 0 -> collector_temp_variation = 1 &
+				collector_temp_variation_bs = -2 -> collector_temp_variation = -1 &
+				collector_temp_variation_bs = 2 -> collector_temp_variation = 3
+			)) &
+			(sun_heat = 2 -> (
+				collector_temp_variation_bs = 0 -> collector_temp_variation = 2 &
+				collector_temp_variation_bs = -2 -> collector_temp_variation = 0 &
+				collector_temp_variation_bs = 2 -> collector_temp_variation = 4
+			));
+
+		collector_temperature_change:
+			(Past(
+				(collector_temperature = 1 & collector_temp_variation = 0) |
+				(collector_temperature = 2 & collector_temp_variation = -1) |
+				(collector_temperature = 3 & collector_temp_variation = -2)
+			,1) -> collector_temperature = 1) &
+			(Past(
+				(collector_temperature = 1 & collector_temp_variation = 1) |
+				(collector_temperature = 2 & collector_temp_variation = 0) |
+				(collector_temperature = 3 & collector_temp_variation = -1) |
+				(collector_temperature = 4 & collector_temp_variation = -2)
+			,1) -> collector_temperature = 2) &
+			(Past(
+				(collector_temperature = 1 & collector_temp_variation = 2) |
+				(collector_temperature = 2 & collector_temp_variation = 1) |
+				(collector_temperature = 3 & collector_temp_variation = 0) |
+				(collector_temperature = 4 & collector_temp_variation = -1) |
+				(collector_temperature = 5 & collector_temp_variation = -2)
+			,1) -> collector_temperature = 3) &
+			(Past(
+				(collector_temperature = 1 & collector_temp_variation = 3) |
+				(collector_temperature = 2 & collector_temp_variation = 2) |
+				(collector_temperature = 3 & collector_temp_variation = 1) |
+				(collector_temperature = 4 & collector_temp_variation = 0) |
+				(collector_temperature = 5 & collector_temp_variation = -1)
+			,1) -> collector_temperature = 4) &
+			(Past(
+				(collector_temperature = 1 & collector_temp_variation = 4) |
+				(collector_temperature = 2 & collector_temp_variation = 3) |
+				(collector_temperature = 3 & collector_temp_variation = 2) |
+				(collector_temperature = 4 & collector_temp_variation = 1) |
+				(collector_temperature = 5 & collector_temp_variation = 0)
+			,1) -> collector_temperature = 5);
+
+		no_state_changes_tap:
+			0 < tap_in_temperature & tap_in_temperature < 100 &
+			0 < tap_out_temperature & tap_out_temperature < 100;
+
+		tank_no_state_changes:
+			0 < tank_temperature & tank_temperature < 100 &
+			0 < pump_in_temperature & pump_in_temperature < 100;
+			
+		tank_volume_within_bounds: 
+			0 < tank_volume & tank_volume <= TANK_MAX_VOLUME;
+
+		tank_delta_volume_A_def:	// collector_out_volume - pump_in_volume
+			(collector_out_volume = pump_in_volume -> tank_delta_volume_A = 0) &
+			(collector_out_volume > pump_in_volume -> tank_delta_volume_A = 1) &
+			(collector_out_volume < pump_in_volume -> tank_delta_volume_A = -1);
+
+		tank_delta_volume_B_def:	// tap_in_volume - tap_out_volume
+			(tap_in_volume = tap_out_volume -> tank_delta_volume_B = 0) &
+			(tap_in_volume > tap_out_volume -> tank_delta_volume_B = 1) &
+			(tap_in_volume < tap_out_volume -> tank_delta_volume_B = -1);
+
+		tank_delta_volume_definition:	// tank_delta_volume_A + tank_delta_volume_B
+			(tank_delta_volume_A = 0 -> (tank_delta_volume = tank_delta_volume_B)) &
+			(tank_delta_volume_A = 1 -> (
+				tank_delta_volume_B = -1 -> tank_delta_volume = 0 &
+				tank_delta_volume_B = 0 -> tank_delta_volume = 1 &
+				tank_delta_volume_B = 1 -> tank_delta_volume = 2
+			)) &
+			(tank_delta_volume_A = -1 -> (
+				tank_delta_volume_B = -1 -> tank_delta_volume = -2 &
+				tank_delta_volume_B = 0 -> tank_delta_volume = -1 &
+				tank_delta_volume_B = 1 -> tank_delta_volume = 0
+			));
+
+		tank_temperature_out_tap:
+			tap_out_temperature = tank_temperature;
+		
+		tank_temperature_out:
+			pump_in_temperature = tank_temperature;
+		
+		tank_total_in_volume_temperature_product_A:
+			(collector_out_volume = 1 -> tank_total_in_volume_temperature_product_A = collector_out_temperature) &
+			(collector_out_volume = 0 -> tank_total_in_volume_temperature_product_A = 0);
+
+		tank_total_in_volume_temperature_product_B:
+			(tap_in_volume = 1 -> tank_total_in_volume_temperature_product_B = tap_in_temperature) &
+			(tap_in_volume = 0 -> tank_total_in_volume_temperature_product_B = 0);
+		
+		tank_total_in_volume_temperature_product_definition:
+			(tank_total_in_volume_temperature_product_A > 0 & tank_total_in_volume_temperature_product_B > 0 ->
+				tank_total_in_volume_temperature_product = 2) &
+			(tank_total_in_volume_temperature_product_A > 0 & tank_total_in_volume_temperature_product_B = 0 |
+			 tank_total_in_volume_temperature_product_A = 0 & tank_total_in_volume_temperature_product_B > 0 ->
+				tank_total_in_volume_temperature_product = 1) &
+			(tank_total_in_volume_temperature_product_A = 0 & tank_total_in_volume_temperature_product_B = 0 ->
+				tank_total_in_volume_temperature_product = 0);
+
+		tank_total_out_volume_temperature_product_definition:
+			(pump_in_volume = 1 & tap_out_volume = 1 -> tank_total_out_volume_temperature_product = 2) &
+			(pump_in_volume = 1 & tap_out_volume = 0 |
+			 pump_in_volume = 0 & tap_out_volume = 1 -> tank_total_out_volume_temperature_product = 1) &
+			(pump_in_volume = 0 & tap_out_volume = 0 -> tank_total_out_volume_temperature_product = 0);
+
+		tank_temperature_variation:
+			(tank_total_out_volume_temperature_product = tank_total_in_volume_temperature_product ->
+				tank_temp_variation = 0) &
+			(tank_total_out_volume_temperature_product > tank_total_in_volume_temperature_product ->
+				tank_temp_variation = -2) &
+			(tank_total_out_volume_temperature_product < tank_total_in_volume_temperature_product ->
+				tank_temp_variation = 2);
+
+		tank_temperature_change:
+			(Past(
+				(tank_temperature = 1 & tank_temp_variation = 0) |
+				(tank_temperature = 2 & tank_temp_variation = -1) |
+				(tank_temperature = 3 & tank_temp_variation = -2)
+			,1) -> tank_temperature = 1) &
+			(Past(
+				(tank_temperature = 1 & tank_temp_variation = 1) |
+				(tank_temperature = 2 & tank_temp_variation = 0) |
+				(tank_temperature = 3 & tank_temp_variation = -1) |
+				(tank_temperature = 4 & tank_temp_variation = -2)
+			,1) -> tank_temperature = 2) &
+			(Past(
+				(tank_temperature = 1 & tank_temp_variation = 2) |
+				(tank_temperature = 2 & tank_temp_variation = 1) |
+				(tank_temperature = 3 & tank_temp_variation = 0) |
+				(tank_temperature = 4 & tank_temp_variation = -1) |
+				(tank_temperature = 5 & tank_temp_variation = -2)
+			,1) -> tank_temperature = 3) &
+			(Past(
+				(tank_temperature = 1 & tank_temp_variation = 3) |
+				(tank_temperature = 2 & tank_temp_variation = 2) |
+				(tank_temperature = 3 & tank_temp_variation = 1) |
+				(tank_temperature = 4 & tank_temp_variation = 0) |
+				(tank_temperature = 5 & tank_temp_variation = -1)
+			,1) -> tank_temperature = 4) &
+			(Past(
+				(tank_temperature = 1 & tank_temp_variation = 4) |
+				(tank_temperature = 2 & tank_temp_variation = 3) |
+				(tank_temperature = 3 & tank_temp_variation = 2) |
+				(tank_temperature = 4 & tank_temp_variation = 1) |
+				(tank_temperature = 5 & tank_temp_variation = 0)
+			,1) -> tank_temperature = 5);
+
+
+		periodicity:
+			update=1 -> NextTime(update=1, POLLING_INTERVAL);
+		
+		sens_tank_update:
+			update=1 -> temp_tank = tank_temperature;
+
+		sens_collector_update:
+			update=1 -> temp_collector = collector_temperature;
+
+		sens_tank_hold:
+			update=0 -> (
+				(Past(temp_tank=1, 1) -> temp_tank=1) &
+				(Past(temp_tank=2, 1) -> temp_tank=2) &
+				(Past(temp_tank=3, 1) -> temp_tank=3) &
+				(Past(temp_tank=4, 1) -> temp_tank=4) &
+				(Past(temp_tank=5, 1) -> temp_tank=5)
+			);
+
+		sens_collector_hold:
+			update=0 -> (
+				(Past(temp_collector=1, 1) -> temp_collector=1) &
+				(Past(temp_collector=2, 1) -> temp_collector=2) &
+				(Past(temp_collector=3, 1) -> temp_collector=3) &
+				(Past(temp_collector=4, 1) -> temp_collector=4) &
+				(Past(temp_collector=5, 1) -> temp_collector=5)
+			);
+		
+		start_update:
+			AlwP(update=0) -> update=1;
+
+
+// PROPERTIES TO CHECK
+// collector_delta_volume = 0
+// tank_delta_volume = 0
