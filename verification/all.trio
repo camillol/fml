@@ -1,3 +1,52 @@
+variables
+	pump_start:[0..1], pump_stop:[0..1], pump_on:[0..1], pump_off:[0..1],
+
+	temp_tank:[-2..8], temp_collector:[-2..8], delta_temp:[-10..10],
+	pump_in_volume:[0..1], pump_in_temperature:[-2..8], pump_out_volume:[0..1], out_temperature:[-2..8]
+
+constants
+	DELTA_LOW_THRESH=2, DELTA_HIGH_THRESH=4, PUMP_VOLUME=1
+
+axioms
+	controller_sane_consts:
+		DELTA_HIGH_THRESH > DELTA_LOW_THRESH > 0
+	
+	controller_define_delta:
+		delta_temp = temp_collector - temp_tank
+	
+	controller_start:	-- turn on pump when delta is high enough and the system isn't in maintenance mode
+		UpToNow(pump_off) & delta_temp > DELTA_HIGH_THRESH & !maintenance <-> pump_start
+	
+	controller_stop:	-- turn off pump when delta is low enough or the system is in maintenance mode
+		UpToNow(pump_on) & ( delta_temp < DELTA_LOW_THRESH | maintenance ) <-> pump_stop
+
+	pump_start_off:
+		AlwP(!control_start) -> state_off
+
+	pump_same_amount:
+		pump_in_volume = pump_out_volume
+			
+	pump_same_temp:
+		pump_in_temperature = pump_out_temperature
+		
+	pump_when_off:
+		pump_off -> pump_in_volume = 0
+		
+	pump_when_on:
+		pump_on -> pump_in_volume = PUMP_VOLUME
+		
+	pump_start:
+		UpToNow(pump_off) & pump_start -> Until_ei(pump_stop, pump_on)
+
+	pump_stop:
+		UpToNow(pump_on) & pump_stop -> Until_ei(pump_start, pump_off)
+
+	pump_state_unique:
+		(pump_off & !pump_on) | (pump_on ^ !pump_off)
+
+
+-------------------------------------------------
+
 class Collector;
 	inherits WaterContainer [redefine delta_heat_definition];
 	
@@ -12,42 +61,7 @@ class Collector;
 			delta_heat = sun_heat;
 
 end Collector.
-class Controller;
 
-	visible
-		pump_control, pump_state, maintenance, temp_tank, temp_collector;
-
-	temporal domain natural;
-
-	TD items
-		predicates
-			pump_control({start, stop});
-			pump_state({on,off});
-			maintenance;
-		variables
-			temp_tank, temp_collector, delta_temp: real;
-
-	TI items
-		consts
-			delta_low_thresh, delta_high_thresh: real;
-	
-	axioms
-
-		sane_consts:
-			delta_high_thresh > delta_low_thresh > 0
-		
-		define_delta:
-			delta_temp = temp_collector - temp_tank
-		
-		Start:	-- turn on pump when delta is high enough and the system isn't in maintenance mode
-			UpToNow(pump_state(off)) ^ delta_temp > delta_high_thresh ^ ¬maintenance <->
-				pump_control(start)
-		
-		Stop:	-- turn off pump when delta is low enough or the system is in maintenance mode
-			UpToNow(pump_state(on)) ^ ( delta_temp < delta_low_thresh v maintenance ) <->
-				pump_control(stop)
-
-end Controller.
 class SolarHeatingSystem;
 
 	visible
@@ -115,85 +129,9 @@ class SolarHeatingSystem;
 			0 < cold_supply_temperature < 100;
 
 end SolarHeatingSystem.
-class Maintainer;
-	
-	visible:
-		startwork, working;
 
-	temporal domain natural;
 
-	TD items
-		predicates
-			startwork; --this is true when the maintainer starts working on the collector			
-			working; -- this is true while the maintainer is working on the collector
-	TI items
-		consts
-			min_maintenance_interval, max_maintenance_interval, worktime: real;
-			
-	axioms
-		vars
-			t: real;
-			
-		enforce_maximum_interval:
-			Lasted_ee(¬working, max_maintenance_interval) -> startwork;
-		
-		enforce_minimum_interval:
-			startwork -> Lasted_ee(¬startwork, min_maintenance_interval);
-			
-		initially_not_working:
-			AlwP(¬startwork) -> ¬working;
-			
-		work_period:
-			WithinP_ei(startwork, worktime) <-> working;
 
-		sane_times:
-			worktime < min_maintenance_interval;
-
-end Maintainer.
-class Pump;
-	
-	visible:
-		control, state, in_volume, in_temperature, out_volume, out_temperature;
-	temporal domain natural;
-
-	TD items
-		predicates
-			control({start, stop});
-			state({on,off});
-		variables
-			in_volume, in_temperature,
-			out_volume, out_temperature: real;
-	TI items
-		consts
-			pump_volume: real;
-	
-	axioms
-	
-		StartOff:
-			AlwP(¬control(start)) -> state(off)
-
-		SameAmount:
-			in_volume = out_volume
-			
-		SameTemp:
-			in_temperature = out_temperature
-		
-		WhenOff:
-			state(off) -> in_volume = 0
-		
-		WhenOn:
-			state(on) -> in_volume = pump_volume
-		
-		Start:
-			UpToNow(state(off)) ^ control(start) -> Until_ei(control(stop), state(on))
-
-		Stop:
-			UpToNow(state(on)) ^ control(stop) -> Until_ei(control(start), state(off))
-
-		StateUnique:
-			(state(off) ^ ¬state(on)) v (state(on) ^ ¬state(off))
-
-end Pump.
 class Sensor
 
 	visible
@@ -258,6 +196,7 @@ class Tank;
 							tap_in_volume * tap_in_temperature
 
 end Tank.
+
 class Tap;
 	
 	visible
