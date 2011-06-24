@@ -26,7 +26,9 @@ variables
 	tap_in_volume:[0..1], tap_out_volume:[0..1],
 	tap_in_temperature:[1..5], tap_out_temperature:[1..5],
 
-						update:[0..1]
+						update:[0..1],
+	
+	next_collector_temperature:[1..5], next_tank_temperature:[1..5]
 	
 
 constants
@@ -146,39 +148,46 @@ axioms
 				collector_temp_variation_bs = 2 -> collector_temp_variation = 4
 			));
 
-		collector_temperature_change:
-			(Past(
+		collector_temperature_next:
+			(
 				(collector_temperature = 1 & collector_temp_variation = 0) |
 				(collector_temperature = 2 & collector_temp_variation = -1) |
 				(collector_temperature = 3 & collector_temp_variation = -2)
-			,1) -> collector_temperature = 1) &
-			(Past(
+				-> next_collector_temperature = 1) &
+			(
 				(collector_temperature = 1 & collector_temp_variation = 1) |
 				(collector_temperature = 2 & collector_temp_variation = 0) |
 				(collector_temperature = 3 & collector_temp_variation = -1) |
 				(collector_temperature = 4 & collector_temp_variation = -2)
-			,1) -> collector_temperature = 2) &
-			(Past(
+				-> next_collector_temperature = 2) &
+			(
 				(collector_temperature = 1 & collector_temp_variation = 2) |
 				(collector_temperature = 2 & collector_temp_variation = 1) |
 				(collector_temperature = 3 & collector_temp_variation = 0) |
 				(collector_temperature = 4 & collector_temp_variation = -1) |
 				(collector_temperature = 5 & collector_temp_variation = -2)
-			,1) -> collector_temperature = 3) &
-			(Past(
+				-> next_collector_temperature = 3) &
+			(
 				(collector_temperature = 1 & collector_temp_variation = 3) |
 				(collector_temperature = 2 & collector_temp_variation = 2) |
 				(collector_temperature = 3 & collector_temp_variation = 1) |
 				(collector_temperature = 4 & collector_temp_variation = 0) |
 				(collector_temperature = 5 & collector_temp_variation = -1)
-			,1) -> collector_temperature = 4) &
-			(Past(
+				-> next_collector_temperature = 4) &
+			(
 				(collector_temperature = 1 & collector_temp_variation = 4) |
 				(collector_temperature = 2 & collector_temp_variation = 3) |
 				(collector_temperature = 3 & collector_temp_variation = 2) |
 				(collector_temperature = 4 & collector_temp_variation = 1) |
 				(collector_temperature = 5 & collector_temp_variation = 0)
-			,1) -> collector_temperature = 5);
+				-> next_collector_temperature = 5);
+		
+		collector_temperature_change:
+			(Past(next_collector_temperature = 1,1) -> collector_temperature = 1) &
+			(Past(next_collector_temperature = 2,1) -> collector_temperature = 2) &
+			(Past(next_collector_temperature = 3,1) -> collector_temperature = 3) &
+			(Past(next_collector_temperature = 4,1) -> collector_temperature = 4) &
+			(Past(next_collector_temperature = 5,1) -> collector_temperature = 5);
 
 		no_state_changes_tap:
 			0 < tap_in_temperature & tap_in_temperature < 100 &
@@ -251,40 +260,46 @@ axioms
 			(tank_total_out_volume_temperature_product < tank_total_in_volume_temperature_product ->
 				tank_temp_variation = 2);
 
-		tank_temperature_change:
-			(Past(
+		tank_temperature_next:
+			(
 				(tank_temperature = 1 & tank_temp_variation = 0) |
 				(tank_temperature = 2 & tank_temp_variation = -1) |
 				(tank_temperature = 3 & tank_temp_variation = -2)
-			,1) -> tank_temperature = 1) &
-			(Past(
+				-> next_tank_temperature = 1) &
+			(
 				(tank_temperature = 1 & tank_temp_variation = 1) |
 				(tank_temperature = 2 & tank_temp_variation = 0) |
 				(tank_temperature = 3 & tank_temp_variation = -1) |
 				(tank_temperature = 4 & tank_temp_variation = -2)
-			,1) -> tank_temperature = 2) &
-			(Past(
+				-> next_tank_temperature = 2) &
+			(
 				(tank_temperature = 1 & tank_temp_variation = 2) |
 				(tank_temperature = 2 & tank_temp_variation = 1) |
 				(tank_temperature = 3 & tank_temp_variation = 0) |
 				(tank_temperature = 4 & tank_temp_variation = -1) |
 				(tank_temperature = 5 & tank_temp_variation = -2)
-			,1) -> tank_temperature = 3) &
-			(Past(
+				-> next_tank_temperature = 3) &
+			(
 				(tank_temperature = 1 & tank_temp_variation = 3) |
 				(tank_temperature = 2 & tank_temp_variation = 2) |
 				(tank_temperature = 3 & tank_temp_variation = 1) |
 				(tank_temperature = 4 & tank_temp_variation = 0) |
 				(tank_temperature = 5 & tank_temp_variation = -1)
-			,1) -> tank_temperature = 4) &
-			(Past(
+				-> next_tank_temperature = 4) &
+			(
 				(tank_temperature = 1 & tank_temp_variation = 4) |
 				(tank_temperature = 2 & tank_temp_variation = 3) |
 				(tank_temperature = 3 & tank_temp_variation = 2) |
 				(tank_temperature = 4 & tank_temp_variation = 1) |
 				(tank_temperature = 5 & tank_temp_variation = 0)
-			,1) -> tank_temperature = 5);
+				-> next_tank_temperature = 5);
 
+		tank_temperature_change:
+			(Past(next_tank_temperature = 1,1) -> tank_temperature = 1) &
+			(Past(next_tank_temperature = 2,1) -> tank_temperature = 2) &
+			(Past(next_tank_temperature = 3,1) -> tank_temperature = 3) &
+			(Past(next_tank_temperature = 4,1) -> tank_temperature = 4) &
+			(Past(next_tank_temperature = 5,1) -> tank_temperature = 5);
 
 		periodicity:
 			update=1 -> NextTime(update=1, POLLING_INTERVAL);
