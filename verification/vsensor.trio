@@ -1,0 +1,33 @@
+class Sensor
+
+	TD items
+		variables
+			temp_tank, tank_temperature: real;
+			temp_collector, collector_temperature: real;
+			update:[0..1];
+			
+	TI items
+		consts
+			POLLING_INTERVAL=3;
+			
+	axioms
+	
+		periodicity:
+			update -> NextTime(update, POLLING_INTERVAL)
+		
+		sens_tank_update:
+			update -> temp_tank = tank_temperature
+
+		sens_collector_update:
+			update -> temp_collector = collector_temperature
+
+		sens_tank_hold:
+			!update -> temp_tank = memo_temp_tank[1]
+
+		sens_collector_hold:
+			!update -> temp_collector = memo_temp_collector[1]
+		
+		start_update:
+			AlwP(!update) -> update
+
+end Sensor.

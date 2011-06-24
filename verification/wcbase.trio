@@ -1,0 +1,58 @@
+	TD items
+		variables
+			WCtemperature, WCvolume,
+			WCin_volume, WCin_temperature,
+			WCout_volume, WCout_temperature,
+			WCdelta_volume,
+			WCdelta_heat: real;
+			
+	TI items
+		consts
+			WCmax_volume,
+			WATER_SPECIFIC_HEAT, WATER_DENSITY : real;	-- water properties
+			
+	axioms
+
+		WCno_state_changes:
+			0 < WCtemperature < 100 &
+			0 < WCin_temperature < 100 &
+			0 < WCout_temperature < 100;
+			
+		WCvolume_within_bounds: 
+			0 < WCvolume <= WCmax_volume;
+
+-- DA VERIFICARE
+--		WCvolume_remains_constant:
+--			memo_volume[1] = volume;
+		
+		WCdelta_volume_definition:
+			WCdelta_volume = WCin_volume - WCout_volume
+		
+		WCvolume_change:
+			volume = memo_volume[1] + memo_delta_volume[1];
+		
+		WCtemperature_out:
+			WCout_temperature = WCtemperature
+		
+		WCdelta_heat_definition:
+			WCdelta_heat = 0;
+
+		WCtotal_out_volume_definition:
+			WCtotal_out_volume = WCout_volume
+		
+		WCtotal_in_volume_temperature_product_definition:
+			WCtotal_in_volume_temperature_product = WCin_volume * WCin_temperature
+
+		WCtotal_out_volume_temperature_product_definition:
+			WCtotal_out_volume_temperature_product = WCtotal_out_volume * WCtemperature
+
+		WCtemperature_change:
+			WCtemperature = (
+						(
+							memo_WCvolume[1] * memo_WCtemperature[1]
+							- memo_WCtotal_out_volume_temperature_product[1]
+							+ memo_WCtotal_in_volume_temperature_product[1]
+						) / WCvolume
+						+ WCdelta_heat / (WATER_SPECIFIC_HEAT * WCvolume * WATER_DENSITY)
+					);
+

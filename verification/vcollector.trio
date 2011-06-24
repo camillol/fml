@@ -1,0 +1,55 @@
+	TD items
+		variables
+			collector_temperature, collector_volume,
+			pump_out_volume, pump_out_temperature,
+			collector_out_volume, collector_out_temperature,
+			collector_delta_volume,
+			sun_heat: real;
+			
+	TI items
+		consts
+			COLLECTOR_MAX_VOLUME,
+			WATER_SPECIFIC_HEAT, WATER_DENSITY : real;	-- water properties
+			
+	axioms
+
+		collector_no_state_changes:
+			0 < collector_temperature < 100 &
+			0 < pump_out_temperature < 100 &
+			0 < collector_out_temperature < 100;
+			
+		collector_volume_within_bounds: 
+			0 < collector_volume <= max_volume;
+
+-- DA VERIFICARE
+--		collector_volume_remains_constant:
+--			memo_volume[1] = volume;
+		
+		collector_delta_volume_definition:
+			collector_delta_volume = pump_out_volume - collector_out_volume
+		
+		collector_volume_change:
+			volume = memo_volume[1] + memo_delta_volume[1];
+		
+		collector_temperature_out:
+			collector_out_temperature = collector_temperature
+		
+		collector_total_out_volume_definition:
+			collector_total_out_volume = collector_out_volume
+		
+		collector_total_in_volume_temperature_product_definition:
+			collector_total_in_volume_temperature_product = pump_out_volume * pump_out_temperature
+
+		collector_total_out_volume_temperature_product_definition:
+			collector_total_out_volume_temperature_product = collector_total_out_volume * collector_temperature
+
+		collector_temperature_change:
+			collector_temperature = (
+						(
+							memo_collector_volume[1] * memo_collector_temperature[1]
+							- memo_collector_total_out_volume_temperature_product[1]
+							+ memo_collector_total_in_volume_temperature_product[1]
+						) / collector_volume
+						+ sun_heat / (WATER_SPECIFIC_HEAT * collector_volume * WATER_DENSITY)
+					);
+

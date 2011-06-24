@@ -1,0 +1,61 @@
+	TD items
+		variables
+			tank_temperature, tank_volume,
+			collector_out_volume, collector_out_temperature,
+			pump_in_volume, pump_in_temperature,
+			tank_delta_volume;
+			
+	TI items
+		consts
+			TANK_MAX_VOLUME,
+			WATER_SPECIFIC_HEAT, WATER_DENSITY : real;	-- water properties
+			
+	axioms
+		no_state_changes_tap:
+			0 < tap_in_temperature < 100 ^
+			0 < tap_out_temperature < 100
+
+		tank_no_state_changes:
+			0 < tank_temperature < 100 &
+			0 < collector_out_temperature < 100 &
+			0 < pump_in_temperature < 100;
+			
+		tank_volume_within_bounds: 
+			0 < tank_volume <= TANK_MAX_VOLUME;
+
+-- DA VERIFICARE
+--		tank_volume_remains_constant:
+--			memo_volume[1] = volume;
+		
+		tank_delta_volume_definition:
+			tank_delta_volume = collector_out_volume - pump_in_volume + tap_in_volume - tap_out_volume
+
+		tank_temperature_out_tap:
+			tap_out_temperature = temperature
+		
+
+		tank_volume_change:
+			volume = memo_volume[1] + memo_delta_volume[1];
+		
+		tank_temperature_out:
+			pump_in_temperature = tank_temperature
+		
+		tank_total_out_volume_definition:
+			tank_total_out_volume = pump_in_volume + tap_out_volume
+
+		tank_total_in_volume_temperature_product_definition:
+			tank_total_in_volume_temperature_product = collector_out_volume * collector_out_temperature +
+							tap_in_volume * tap_in_temperature
+
+		tank_total_out_volume_temperature_product_definition:
+			tank_total_out_volume_temperature_product = tank_total_out_volume * tank_temperature
+
+		tank_temperature_change:
+			tank_temperature = (
+						(
+							memo_tank_volume[1] * memo_tank_temperature[1]
+							- memo_tank_total_out_volume_temperature_product[1]
+							+ memo_tank_total_in_volume_temperature_product[1]
+						) / tank_volume
+					);
+

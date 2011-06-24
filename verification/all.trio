@@ -1,13 +1,26 @@
 variables
 	pump_start:[0..1], pump_stop:[0..1], pump_on:[0..1], pump_off:[0..1],
+	tap_on:[0..1],
 
-	temp_tank:[-2..8], temp_collector:[-2..8], delta_temp:[-10..10],
-	pump_in_volume:[0..1], pump_in_temperature:[-2..8], pump_out_volume:[0..1], out_temperature:[-2..8]
+	temp_tank:[1..10], temp_collector:[1..10], delta_temp:[-9..9],
+	pump_in_volume:[0..1], pump_in_temperature:[1..10], pump_out_volume:[0..1], pump_out_temperature:[1..10]	
+
+	collector_temperature:[1..10], collector_volume:[9..11],
+	collector_out_volume:[0..1], collector_out_temperature:[1..10],
+	collector_delta_volume:[-1..1], sun_heat:[0..2],
+
+			tank_temperature:[1..10], tank_volume:[19..21],
+			tank_delta_volume:[-1..1],
+						update:[0..1]
+
 
 constants
-	DELTA_LOW_THRESH=2, DELTA_HIGH_THRESH=4, PUMP_VOLUME=1
+	DELTA_LOW_THRESH=2, DELTA_HIGH_THRESH=4, PUMP_VOLUME=1, COLD_SUPPLY_TEMPERATURE=1, TAP_VOLUME=1
+	COLLECTOR_MAX_VOLUME=10, WATER_SPECIFIC_HEAT=1, WATER_DENSITY=1, TANK_MAX_VOLUME=20,
+				POLLING_INTERVAL=3
 
 axioms
+	
 	controller_sane_consts:
 		DELTA_HIGH_THRESH > DELTA_LOW_THRESH > 0
 	
@@ -20,8 +33,9 @@ axioms
 	controller_stop:	-- turn off pump when delta is low enough or the system is in maintenance mode
 		UpToNow(pump_on) & ( delta_temp < DELTA_LOW_THRESH | maintenance ) <-> pump_stop
 
+
 	pump_start_off:
-		AlwP(!control_start) -> state_off
+		AlwP(!pump_start) -> pump_off
 
 	pump_same_amount:
 		pump_in_volume = pump_out_volume
@@ -42,260 +56,122 @@ axioms
 		UpToNow(pump_on) & pump_stop -> Until_ei(pump_start, pump_off)
 
 	pump_state_unique:
-		(pump_off & !pump_on) | (pump_on ^ !pump_off)
+		(pump_off & !pump_on) | (pump_on & !pump_off)
 
 
--------------------------------------------------
+	tap_start_off:
+		AlwP(!pump_start) -> !tap_on
 
-class Collector;
-	inherits WaterContainer [redefine delta_heat_definition];
-	
-	visible
-		sun_heat;
-	
-	variables
-		sun_heat: real;
-	
-	axioms
-		delta_heat_definition:
-			delta_heat = sun_heat;
-
-end Collector.
-
-class SolarHeatingSystem;
-
-	visible
-		sun_heat, tap_control, start_maintenance, cold_supply_temperature;
-
-	temporal domain natural;
-
-	TD items
-		predicates
-		variables
-
-	TI items
-		consts
-			total_volume: real;
-	
-	modules
-		controller: Controller;
-		collector: Collector;
-		tank: Tank;
-		pump: Pump;
-		tap: Tap;		-- user drawing hot water
-		tank_sensor, collector_sensor: Sensor;
-	
-	connections {
-		(controller.pump_control, pump.control),
-		(controller.pump_state, pump.state),
-		(controller.temp_tank, tank_sensor.temp_reading),
-		(controller.temp_collector, collector_sensor.temp_reading),
+	tap_same_amount:
+		tap_in_volume = tap_out_volume
 		
-		(collector_sensor.thermometer, collector.out_temperature),
-		(tank_sensor.thermometer, tank.out_temperature),
+	tap_temp:
+		tap_out_temperature = COLD_SUPPLY_TEMPERATURE
 		
-		(pump.in_volume, tank.out_volume),
-		(pump.in_temperature, tank.out_temperature),
-
-		(pump.out_volume, collector.in_volume),
-		(pump.out_temperature, collector.in_temperature),
+	tap_when_off:
+		!tap_on -> tap_in_volume = 0
 		
-		(tank.in_volume, collector.out_volume),
-		(tank.in_temperature, collector.out_temperature),
-		
-		(tap.in_volume, tank.tap_out_volume),
-		(tap.in_temperature, tank.tap_out_temperature),
-
-		(tap.out_volume, tank.tap_in_volume),
-		(tap.out_temperature, tank.tap_in_temperature)
-
-		(maintainer.working, controller.maintenance),
-		
-		-- external interface
-		(sun_heat, collector.sun_heat),
-		(tap_control, tap.control),
-		(start_maintenance, maintainer.startwork),
-		(cold_supply_temperature, tap.cold_supply_temperature),
-	}
-	
-	axioms
-		vars
-			t: real;
-
-		NoLeaks:
-			tank.volume + collector.volume = total_volume;
-		
-		ColdSupplyLiquid:
-			0 < cold_supply_temperature < 100;
-
-end SolarHeatingSystem.
+	tap_when_on:
+		tap_on -> tap_in_volume = TAP_VOLUME
 
 
-
-class Sensor
-
-	visible
-		temp_reading, thermometer;
-
-	temporal domain natural;
-
-	TD items
-		variables
-			temp_reading, thermometer: real;
+		collector_no_state_changes:
+			0 < collector_temperature < 100 &
+			0 < pump_out_temperature < 100 &
+			0 < collector_out_temperature < 100;
 			
-		predicates
-			update;
-			
-	TI items
-		consts
-			polling_interval: natural;
-			
-	axioms
-	
-		periodicity:
-			update -> NextTime(update, polling_interval) ^
-				∃ thermometer_now (
-					thermometer_now = thermometer ^
-					Lasts_ie(temp_reading = thermometer_now, polling_interval)
-				)
-		
-		start_update:
-			AlwP(¬update) -> update
+		collector_volume_within_bounds: 
+			0 < collector_volume <= COLLECTOR_MAX_VOLUME;
 
-end Sensor.
-class Tank;
-	inherits WaterContainer [redefine
-		delta_volume_definition,
-		total_out_volume_definition,
-		total_in_volume_temperature_product_definition
-	];
-	
-	variables
-		tap_in_volume, tap_in_temperature,
-		tap_out_volume, tap_out_temperature,
-		total_out_volume,
-		total_in_volume_temperature_product,
-		total_out_volume_temperature_product: real;
-	
-	axioms
+		collector_delta_volume_definition:
+			collector_delta_volume = pump_out_volume - collector_out_volume
+		
+		collector_volume_change:
+			volume = memo_volume[1] + memo_delta_volume[1];
+		
+		collector_temperature_out:
+			collector_out_temperature = collector_temperature
+		
+		collector_total_out_volume_definition:
+			collector_total_out_volume = collector_out_volume
+		
+		collector_total_in_volume_temperature_product_definition:
+			collector_total_in_volume_temperature_product = pump_out_volume * pump_out_temperature
+
+		collector_total_out_volume_temperature_product_definition:
+			collector_total_out_volume_temperature_product = collector_total_out_volume * collector_temperature
+
+		collector_temperature_change:
+			collector_temperature = (
+						(
+							memo_collector_volume[1] * memo_collector_temperature[1]
+							- memo_collector_total_out_volume_temperature_product[1]
+							+ memo_collector_total_in_volume_temperature_product[1]
+						) / collector_volume
+						+ sun_heat / (WATER_SPECIFIC_HEAT * collector_volume * WATER_DENSITY)
+					);
+
+
 		no_state_changes_tap:
 			0 < tap_in_temperature < 100 ^
 			0 < tap_out_temperature < 100
 
-		delta_volume_definition:
-			delta_volume = in_volume - out_volume + tap_in_volume - tap_out_volume
+		tank_no_state_changes:
+			0 < tank_temperature < 100 &
+			0 < collector_out_temperature < 100 &
+			0 < pump_in_temperature < 100;
+			
+		tank_volume_within_bounds: 
+			0 < tank_volume <= TANK_MAX_VOLUME;
 
-		temperature_out_tap:
+		tank_delta_volume_definition:
+			tank_delta_volume = collector_out_volume - pump_in_volume + tap_in_volume - tap_out_volume
+
+		tank_temperature_out_tap:
 			tap_out_temperature = temperature
 		
-		total_out_volume_definition:
-			total_out_volume = out_volume + tap_out_volume
+
+		tank_volume_change:
+			volume = memo_volume[1] + memo_delta_volume[1];
 		
-		total_in_volume_temperature_product_definition:
-			total_in_volume_temperature_product = in_volume * in_temperature +
+		tank_temperature_out:
+			pump_in_temperature = tank_temperature
+		
+		tank_total_out_volume_definition:
+			tank_total_out_volume = pump_in_volume + tap_out_volume
+
+		tank_total_in_volume_temperature_product_definition:
+			tank_total_in_volume_temperature_product = collector_out_volume * collector_out_temperature +
 							tap_in_volume * tap_in_temperature
 
-end Tank.
+		tank_total_out_volume_temperature_product_definition:
+			tank_total_out_volume_temperature_product = tank_total_out_volume * tank_temperature
 
-class Tap;
-	
-	visible
-		cold_supply_temperature;
-	
-	inherits Pump [redefine SameTemp]
-	
-	TD items
-		variables
-			cold_supply_temperature: real;
-	
-	axioms
-	
-		SameTemp:
-			out_temperature = cold_supply_temperature
-
-end Tap.
-class Water_Container
-
-	visible
-		in_volume, in_temperature,
-		out_volume, out_temperature,
-		volume; -- only exposing volume for the noleaks axiom on the system
-	temporal domain natural;
-	
-	TD items
-		variables
-			temperature, volume,
-			in_volume, in_temperature,
-			out_volume, out_temperature,
-			delta_volume,
-			delta_heat: real;
-			
-	TI items
-		consts
-			max_volume,
-			specific_heat, density : real;	-- water properties
-			
-	axioms
-		vars
-			volume_now, temperature_now,
-			in_volume_now, in_temperature_now,
-			out_volume_now, out_temperature_now,
-			delta_volume_now: real;
-	
-		no_state_changes:
-			0 < temperature < 100 ^
-			0 < in_temperature < 100 ^
-			0 < out_temperature < 100
-			
-		volume_within_bounds: 
-			0 < volume <= max_volume;
-			
-		volume_remains_constant:
-			∃volume_now ( volume = volume_now ^ Futr(volume = volume_now, 1) )
-		
-		delta_volume_definition:
-			delta_volume = in_volume - out_volume
-		
-		volume_change:
-			∃delta_volume_now, volume_now (
-				volume = volume_now ^
-				delta_volume = delta_volume_now ^
-				Futr(volume = volume_now + delta_volume_now, 1)
-			)
-		
-		temperature_out:
-			out_temperature = temperature
-		
-		delta_heat_definition:	-- by default we don't have any other energy input/output
-			delta_heat = 0
-
-		total_out_volume_definition:
-			total_out_volume = out_volume
-		
-		total_in_volume_temperature_product_definition:
-			total_in_volume_temperature_product = in_volume * in_temperature
-
-		total_out_volume_temperature_product_definition:
-			total_out_volume_temperature_product = total_out_volume * temperature
-
-		temperature_change:
-			∃volume_now, temperature_now, total_out_volume_temperature_product_now, total_in_volume_temperature_product_now (
-				volume = volume_now ^
-				temperature = temperature_now ^
-				total_out_volume_temperature_product = total_out_volume_temperature_product_now ^
-				total_in_volume_temperature_product = total_in_volume_temperature_product_now ^
-				Futr(temperature = (
-						-- weigthed average of temperatures of volumes which compose the next
-						-- water volume
+		tank_temperature_change:
+			tank_temperature = (
 						(
-							volume_now * temperature_now
-							- total_out_volume_temperature_product_now
-							+ total_in_volume_temperature_product_now
-						) / volume								-- yes, this is the future volume
-						
-						-- temperature change from external heat exchange (not by water exchange)
-						+ delta_heat / (specific_heat * volume * density)
-					, 1)
-			)
-	
-end Water_Container
+							memo_tank_volume[1] * memo_tank_temperature[1]
+							- memo_tank_total_out_volume_temperature_product[1]
+							+ memo_tank_total_in_volume_temperature_product[1]
+						) / tank_volume
+					);
+
+
+		periodicity:
+			update -> NextTime(update, POLLING_INTERVAL)
+		
+		sens_tank_update:
+			update -> temp_tank = tank_temperature
+
+		sens_collector_update:
+			update -> temp_collector = collector_temperature
+
+		sens_tank_hold:
+			!update -> temp_tank = memo_temp_tank[1]
+
+		sens_collector_hold:
+			!update -> temp_collector = memo_temp_collector[1]
+		
+		start_update:
+			AlwP(!update) -> update
+
