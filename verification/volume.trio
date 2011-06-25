@@ -1,0 +1,112 @@
+variables
+	delta_temp:[0..2],
+	
+	pump_start:[0..1], pump_stop:[0..1], pump_on:[0..1], pump_off:[0..1],
+	tap_on:[0..1],
+
+	pump_volume:[0..1],
+
+	collector_volume:[9..11],
+	collector_out_volume:[0..1],
+	collector_delta_volume:[-1..1],
+
+	tank_volume:[19..21],
+	tank_delta_volume_A:[-1..1],
+	tank_delta_volume_B:[-1..1],
+	tank_delta_volume:[-2..2],
+
+	tap_volume:[0..1]
+	
+
+constants
+	DELTA_LOW = 0, DELTA_MEDIUM = 1, DELTA_HIGH = 2, PUMP_VOLUME=1, COLD_SUPPLY_TEMPERATURE=1, TAP_VOLUME=1,
+	COLLECTOR_MAX_VOLUME=10, WATER_SPECIFIC_HEAT=1, WATER_DENSITY=1, TANK_MAX_VOLUME=20,
+				POLLING_INTERVAL=3, TOTAL_VOLUME=30
+
+axioms
+
+// these two are to reduce the state space... possibly
+	init_tank_volume:
+		AlwP(pump_start=0) -> tank_volume = TANK_MAX_VOLUME;
+	init_collector_volume:
+		AlwP(pump_start=0) -> collector_volume = COLLECTOR_MAX_VOLUME;
+	
+	controller_start:
+		UpToNow(pump_off=1) & (delta_temp = DELTA_HIGH) <-> pump_start=1;
+	
+	controller_stop:
+		UpToNow(pump_on=1) & (delta_temp = DELTA_LOW) <-> pump_stop=1;
+
+	pump_start_off:
+		AlwP(pump_start=0) -> pump_off=1;
+
+	pump_when_off:
+		pump_off=1 -> pump_volume = 0;
+		
+	pump_when_on:
+		pump_on=1 -> pump_volume = PUMP_VOLUME;
+		
+	pump_start:
+		UpToNow(pump_off=1) & pump_start=1 -> Until_w(pump_on=1, pump_stop=1);
+
+	pump_stop:
+		UpToNow(pump_on=1) & pump_stop=1 -> Until_w(pump_off=1, pump_start=1);
+
+	pump_state_unique:
+		(pump_off=1 & pump_on=0) | (pump_on=1 & pump_off=0);
+
+	tap_when_off:
+		tap_on=0 -> tap_volume = 0;
+		
+	tap_when_on:
+		tap_on=1 -> tap_volume = TAP_VOLUME;
+
+		collector_volume_within_bounds: 
+			0 < collector_volume & collector_volume <= COLLECTOR_MAX_VOLUME;
+
+		collector_delta_volume_definition:
+			(pump_volume = collector_out_volume -> collector_delta_volume = 0) &
+			(pump_volume = 1 & collector_out_volume = 0 -> collector_delta_volume = 1) &
+			(pump_volume = 0 & collector_out_volume = 1 -> collector_delta_volume = -1);
+		
+
+		tank_volume_within_bounds: 
+			0 < tank_volume & tank_volume <= TANK_MAX_VOLUME;
+
+		tank_delta_volume_A_def:	// collector_out_volume - pump_volume
+			(collector_out_volume = pump_volume -> tank_delta_volume_A = 0) &
+			(collector_out_volume > pump_volume -> tank_delta_volume_A = 1) &
+			(collector_out_volume < pump_volume -> tank_delta_volume_A = -1);
+
+		tank_delta_volume_B_def:	// tap_volume - tap_volume
+			(tap_volume = tap_volume -> tank_delta_volume_B = 0) &
+			(tap_volume > tap_volume -> tank_delta_volume_B = 1) &
+			(tap_volume < tap_volume -> tank_delta_volume_B = -1);
+
+		tank_delta_volume_definition:	// tank_delta_volume_A + tank_delta_volume_B
+			(tank_delta_volume_A = 0 -> (tank_delta_volume = tank_delta_volume_B)) &
+			(tank_delta_volume_A = 1 -> (
+				tank_delta_volume_B = -1 -> tank_delta_volume = 0 &
+				tank_delta_volume_B = 0 -> tank_delta_volume = 1 &
+				tank_delta_volume_B = 1 -> tank_delta_volume = 2
+			)) &
+			(tank_delta_volume_A = -1 -> (
+				tank_delta_volume_B = -1 -> tank_delta_volume = -2 &
+				tank_delta_volume_B = 0 -> tank_delta_volume = -1 &
+				tank_delta_volume_B = 1 -> tank_delta_volume = 0
+			));
+
+		NoLeaks:
+//			tank_volume + collector_volume = TOTAL_VOLUME;
+			(tank_volume = 19 -> collector_volume = 11) &
+			(tank_volume = 20 -> collector_volume = 10) &
+			(tank_volume = 21 -> collector_volume = 9);
+
+
+// PROPERTIES TO CHECK
+//
+// we want to prove that, when the pump is active, the flow in the tank->pump pipe, pump->collector
+// pipe, and collector-> tank pipe is the same. in the original system this is a consequence of the
+// noleaks axiom, which forces delta_volume=0, which forces in_volume = out_volume
+//
+// here we need to do things differently because we don't have arithmetic.
