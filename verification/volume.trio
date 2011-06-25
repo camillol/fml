@@ -69,6 +69,23 @@ axioms
 			(pump_volume = 1 & collector_out_volume = 0 -> collector_delta_volume = 1) &
 			(pump_volume = 0 & collector_out_volume = 1 -> collector_delta_volume = -1);
 		
+		collector_volume_change:
+			(Past(collector_delta_volume=0,1) -> (
+				(Past(collector_volume=9,1) -> collector_volume=9) &
+				(Past(collector_volume=10,1) -> collector_volume=10) &
+				(Past(collector_volume=11,1) -> collector_volume=11)
+			)) &
+			(Past(collector_delta_volume=1,1) -> (
+				(Past(collector_volume=9,1) -> collector_volume=10) &
+				(Past(collector_volume=10,1) -> collector_volume=11) &
+				(Past(collector_volume=11,1) -> collector_volume=12)
+			)) &
+			(Past(collector_delta_volume=-1,1) -> (
+				(Past(collector_volume=9,1) -> collector_volume=8) &
+				(Past(collector_volume=10,1) -> collector_volume=9) &
+				(Past(collector_volume=11,1) -> collector_volume=10)
+			));
+		
 
 		tank_volume_within_bounds: 
 			0 < tank_volume & tank_volume <= TANK_MAX_VOLUME;
@@ -86,27 +103,44 @@ axioms
 		tank_delta_volume_definition:	// tank_delta_volume_A + tank_delta_volume_B
 			(tank_delta_volume_A = 0 -> (tank_delta_volume = tank_delta_volume_B)) &
 			(tank_delta_volume_A = 1 -> (
-				tank_delta_volume_B = -1 -> tank_delta_volume = 0 &
-				tank_delta_volume_B = 0 -> tank_delta_volume = 1 &
-				tank_delta_volume_B = 1 -> tank_delta_volume = 2
+				(tank_delta_volume_B = -1 -> tank_delta_volume = 0) &
+				(tank_delta_volume_B = 0 -> tank_delta_volume = 1) &
+				(tank_delta_volume_B = 1 -> tank_delta_volume = 2)
 			)) &
 			(tank_delta_volume_A = -1 -> (
-				tank_delta_volume_B = -1 -> tank_delta_volume = -2 &
-				tank_delta_volume_B = 0 -> tank_delta_volume = -1 &
-				tank_delta_volume_B = 1 -> tank_delta_volume = 0
+				(tank_delta_volume_B = -1 -> tank_delta_volume = -2) &
+				(tank_delta_volume_B = 0 -> tank_delta_volume = -1) &
+				(tank_delta_volume_B = 1 -> tank_delta_volume = 0)
+			));
+
+		tank_volume_change:
+			(Past(tank_delta_volume=0,1) -> (
+				(Past(tank_volume=9,1) -> tank_volume=9) &
+				(Past(tank_volume=10,1) -> tank_volume=10) &
+				(Past(tank_volume=11,1) -> tank_volume=11)
+			)) &
+			(Past(tank_delta_volume=1,1) -> (
+				(Past(tank_volume=9,1) -> tank_volume=10) &
+				(Past(tank_volume=10,1) -> tank_volume=11) &
+				(Past(tank_volume=11,1) -> tank_volume=12)
+			)) &
+			(Past(tank_delta_volume=-1,1) -> (
+				(Past(tank_volume=9,1) -> tank_volume=8) &
+				(Past(tank_volume=10,1) -> tank_volume=9) &
+				(Past(tank_volume=11,1) -> tank_volume=10)
 			));
 
 		NoLeaks:
-//			tank_volume + collector_volume = TOTAL_VOLUME;
 			(tank_volume = 19 -> collector_volume = 11) &
 			(tank_volume = 20 -> collector_volume = 10) &
 			(tank_volume = 21 -> collector_volume = 9);
-
 
 // PROPERTIES TO CHECK
 //
 // we want to prove that, when the pump is active, the flow in the tank->pump pipe, pump->collector
 // pipe, and collector-> tank pipe is the same. in the original system this is a consequence of the
-// noleaks axiom, which forces delta_volume=0, which forces in_volume = out_volume
+// noleaks axiom, which (assuming total_volume = max_tank_volume + max_collector_volume) forces
+// delta_volume=0, which forces in_volume = out_volume.
 //
 // here we need to do things differently because we don't have arithmetic.
+//
