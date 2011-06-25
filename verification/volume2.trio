@@ -37,23 +37,9 @@ axioms
 			(pump_volume = 1 & collector_out_volume = 0 -> collector_delta_volume = 1) &
 			(pump_volume = 0 & collector_out_volume = 1 -> collector_delta_volume = -1);
 		
-		collector_volume_change:
-			(collector_delta_volume=0 -> (
-				(collector_volume=9 -> Futr(collector_volume=9,1)) &
-				(collector_volume=10 -> Futr(collector_volume=10,1)) &
-				(collector_volume=11 -> Futr(collector_volume=11,1))
-			)) &
-			(collector_delta_volume=1 -> (
-				(collector_volume=9 -> Futr(collector_volume=10,1)) &
-				(collector_volume=10 -> Futr(collector_volume=11,1)) &
-				(collector_volume=11 -> Futr(collector_volume=12,1))
-			)) &
-			(collector_delta_volume=-1 -> (
-				(collector_volume=9 -> Futr(collector_volume=8,1)) &
-				(collector_volume=10 -> Futr(collector_volume=9,1)) &
-				(collector_volume=11 -> Futr(collector_volume=10,1))
-			));
-		
+		collector_volume_no_change:
+//			collector_delta_volume=0;
+			1=1 -> collector_delta_volume=0;
 
 		tank_volume_within_bounds: 
 			0 < tank_volume & tank_volume <= TANK_MAX_VOLUME;
@@ -81,37 +67,9 @@ axioms
 				(tank_delta_volume_B = 1 -> tank_delta_volume = 0)
 			));
 
-		tank_volume_change:
-			(tank_delta_volume=0 -> (
-				(tank_volume=19 -> Futr(tank_volume=19,1)) &
-				(tank_volume=20 -> Futr(tank_volume=20,1)) &
-				(tank_volume=21 -> Futr(tank_volume=21,1))
-			)) &
-			(tank_delta_volume=1 -> (
-				(tank_volume=19 -> Futr(tank_volume=20,1)) &
-				(tank_volume=20 -> Futr(tank_volume=21,1)) &
-				(tank_volume=21 -> Futr(tank_volume=22,1))
-			)) &
-			(tank_delta_volume=-1 -> (
-				(tank_volume=19 -> Futr(tank_volume=18,1)) &
-				(tank_volume=20 -> Futr(tank_volume=19,1)) &
-				(tank_volume=21 -> Futr(tank_volume=20,1))
-			)) &
-			(tank_delta_volume=-2 -> (
-				(tank_volume=19 -> Futr(tank_volume=17,1)) &
-				(tank_volume=20 -> Futr(tank_volume=18,1)) &
-				(tank_volume=21 -> Futr(tank_volume=19,1))
-			)) &
-			(tank_delta_volume=2 -> (
-				(tank_volume=19 -> Futr(tank_volume=21,1)) &
-				(tank_volume=20 -> Futr(tank_volume=22,1)) &
-				(tank_volume=21 -> Futr(tank_volume=23,1))
-			));
-
-		NoLeaks:
-			(tank_volume = 19 -> collector_volume = 11) &
-			(tank_volume = 20 -> collector_volume = 10) &
-			(tank_volume = 21 -> collector_volume = 9);
+		tank_volume_no_change:
+//			tank_delta_volume = 0;
+			1=1 -> tank_delta_volume=0;
 
 // PROPERTIES TO CHECK
 //
@@ -120,5 +78,11 @@ axioms
 // noleaks axiom, which (assuming total_volume = max_tank_volume + max_collector_volume) forces
 // delta_volume=0, which forces in_volume = out_volume.
 //
-// here we need to do things differently because we don't have arithmetic.
+// here we need to do things differently because we don't have arithmetic. furthermore, T2P is
+// unable to check that a given state would necessarily lead to contradicting an axiom in the next
+// state; therefore we have to force delta_volume=0 directly.
 //
+// property to check:
+//
+//	closed_flow:
+//		collector_out_volume = pump_volume;

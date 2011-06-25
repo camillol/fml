@@ -1,0 +1,73 @@
+#define t0	t0==1
+#define s	s==1
+#define a	collector_out_volume == pump_volume
+
+	/*
+	 * Formula As Typed: []  (t0 && s -> a)
+	 * The Never Claim Below Corresponds
+	 * To The Negated Formula !([]  (t0 && s -> a))
+	 * (formalizing violations of the original)
+	 */
+
+never {    /* !([]  (t0 && s -> a)) */
+T0_init:
+	if
+	:: (! ((a)) && (s) && (t0)) -> goto accept_all
+	:: (1) -> goto T0_init
+	fi;
+accept_all:
+	skip
+}
+
+#ifdef NOTES
+Use Load to open a file or a template.
+
+
+#endif
+#ifdef RESULT
+warning: for p.o. reduction to be valid the never claim must be stutter-invariant
+(never claims generated from LTL formulae are stutter-invariant)
+depth 0: Claim reached state 5 (line 227)
+
+(Spin Version 5.2.5 -- 17 April 2010)
+	+ Partial Order Reduction
+	+ Compression
+
+Full statespace search for:
+	never claim         	+
+	assertion violations	+ (if within scope of claim)
+	acceptance   cycles 	+ (fairness disabled)
+	invalid end states	- (disabled by never claim)
+
+State-vector 56 byte, depth reached 2448, errors: 0
+   716466 states, stored
+   719244 states, matched
+  1435710 transitions (= stored+matched)
+   565419 atomic steps
+hash conflicts:    439220 (resolved)
+
+Stats on memory usage (in Megabytes):
+   62.861	equivalent memory usage for states (stored*(State-vector + overhead))
+   38.750	actual memory usage for states (compression: 61.64%)
+         	state-vector as stored = 21 byte + 36 byte overhead
+    4.000	memory used for hash table (-w19)
+    0.458	memory used for DFS stack (-m10000)
+   43.130	total actual memory usage
+
+nr of templates: [ globals chans procs ]
+collapse counts: [ 97218 113 2 1 ]
+unreached in proctype spe
+	line 155, "pan.___", state 163, "s = 0"
+	(1 of 181 states)
+unreached in proctype :init:
+	(0 of 2 states)
+unreached in proctype :never:
+	line 232, "pan.___", state 8, "-end-"
+	(1 of 8 states)
+
+pan: elapsed time 3.35 seconds
+pan: rate 213870.45 states/second
+pan: avg transition delay 2.3333e-06 usec
+        3.36 real         3.29 user         0.04 sys
+
+#endif
