@@ -201,7 +201,7 @@ axioms
 			0 < pump_in_temperature & pump_in_temperature < 100;
 			
 		tank_temperature_out_tap:
-			tap_out_temperature = tank_temperature;
+			tap_in_temperature = tank_temperature;
 		
 		tank_temperature_out:
 			pump_in_temperature = tank_temperature;
@@ -211,7 +211,7 @@ axioms
 			(collector_out_volume = 0 -> tank_total_in_volume_temperature_product_A = 0);
 
 		tank_total_in_volume_temperature_product_B:
-			(tap_in_volume = 1 -> tank_total_in_volume_temperature_product_B = tap_in_temperature) &
+			(tap_in_volume = 1 -> tank_total_in_volume_temperature_product_B = tap_out_temperature) &
 			(tap_in_volume = 0 -> tank_total_in_volume_temperature_product_B = 0);
 		
 		tank_total_in_volume_temperature_product_definition:
