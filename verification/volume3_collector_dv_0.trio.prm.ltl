@@ -1,0 +1,99 @@
+#define t0	t0==1
+#define s	s==1
+#define collector_delta_volume_zero	collector_delta_volume==0
+
+
+	/*
+	 * Formula As Typed: []  (t0 && s -> collector_delta_volume_zero)
+	 * The Never Claim Below Corresponds
+	 * To The Negated Formula !([]  (t0 && s -> collector_delta_volume_zero))
+	 * (formalizing violations of the original)
+	 */
+
+never {    /* !([]  (t0 && s -> collector_delta_volume_zero)) */
+T0_init:
+	if
+	:: (! ((collector_delta_volume_zero)) && (s) && (t0)) -> goto accept_all
+	:: (1) -> goto T0_init
+	fi;
+accept_all:
+	skip
+}
+
+
+#ifdef NOTES
+Use Load to open a file or a template.
+
+#endif
+#ifdef RESULT
+warning: for p.o. reduction to be valid the never claim must be stutter-invariant
+(never claims generated from LTL formulae are stutter-invariant)
+depth 0: Claim reached state 5 (line 266)
+Depth=      54 States=    1e+06 Transitions= 1.09e+06 Memory=    79.946	t=   2.86 R=   3e+05
+Depth=      54 States=    2e+06 Transitions= 2.18e+06 Memory=   155.337	t=   6.22 R=   3e+05
+pan: resizing hashtable to -w21..  done
+Depth=      54 States=    3e+06 Transitions= 3.26e+06 Memory=   246.337	t=   9.73 R=   3e+05
+Depth=      54 States=    4e+06 Transitions= 4.35e+06 Memory=   321.825	t=   12.9 R=   3e+05
+Depth=      54 States=    5e+06 Transitions= 5.44e+06 Memory=   397.216	t=   16.2 R=   3e+05
+pan: resizing hashtable to -w23..  done
+Depth=      54 States=    6e+06 Transitions= 6.53e+06 Memory=   534.751	t=   20.6 R=   3e+05
+Depth=      54 States=    7e+06 Transitions= 7.62e+06 Memory=   610.239	t=   23.6 R=   3e+05
+Depth=      54 States=    8e+06 Transitions= 8.71e+06 Memory=   685.532	t=   26.6 R=   3e+05
+Depth=      54 States=    9e+06 Transitions= 9.79e+06 Memory=   761.020	t=   29.7 R=   3e+05
+Depth=      54 States=    1e+07 Transitions= 1.09e+07 Memory=   836.509	t=   32.9 R=   3e+05
+
+(Spin Version 5.2.5 -- 17 April 2010)
+	+ Partial Order Reduction
+	+ Compression
+
+Full statespace search for:
+	never claim         	+
+	assertion violations	+ (if within scope of claim)
+	acceptance   cycles 	+ (fairness disabled)
+	invalid end states	- (disabled by never claim)
+
+State-vector 64 byte, depth reached 54, errors: 0
+ 10795682 states, stored
+   952560 states, matched
+ 11748242 transitions (= stored+matched)
+  2898057 atomic steps
+hash conflicts:   8060372 (resolved)
+
+Stats on memory usage (in Megabytes):
+ 1029.556	equivalent memory usage for states (stored*(State-vector + overhead))
+  832.571	actual memory usage for states (compression: 80.87%)
+         	state-vector as stored = 45 byte + 36 byte overhead
+   64.000	memory used for hash table (-w23)
+    0.458	memory used for DFS stack (-m10000)
+  896.470	total actual memory usage
+
+nr of templates: [ globals chans procs ]
+collapse counts: [ 4762802 47 2 1 ]
+unreached in proctype spe
+	line 77, "pan.___", state 78, "(1)"
+	line 94, "pan.___", state 99, "(1)"
+	line 118, "pan.___", state 133, "(1)"
+	line 130, "pan.___", state 145, "s = 0"
+	line 136, "pan.___", state 152, "s = 0"
+	line 142, "pan.___", state 159, "s = 0"
+	line 148, "pan.___", state 166, "s = 0"
+	line 154, "pan.___", state 173, "s = 0"
+	line 160, "pan.___", state 180, "s = 0"
+	line 166, "pan.___", state 187, "s = 0"
+	line 172, "pan.___", state 194, "s = 0"
+	line 178, "pan.___", state 201, "s = 0"
+	line 189, "pan.___", state 216, "t0 = 0"
+	(13 of 219 states)
+unreached in proctype :init:
+	(0 of 2 states)
+unreached in proctype :never:
+	line 271, "pan.___", state 8, "-end-"
+	(1 of 8 states)
+
+pan: elapsed time 35.7 seconds
+pan: rate 302315.37 states/second
+pan: avg transition delay 3.0396e-06 usec
+       35.89 real        34.43 user         1.04 sys
+
+
+#endif
