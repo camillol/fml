@@ -1,4 +1,7 @@
+// state is too large to verify - see volume2 and volume3
+
 variables
+	start:[0..1],
 	delta_temp:[0..2],
 	
 	pump_start:[0..1], pump_stop:[0..1], pump_on:[0..1], pump_off:[0..1],
@@ -9,11 +12,13 @@ variables
 	collector_volume:[9..11],
 	collector_out_volume:[0..1],
 	collector_delta_volume:[-1..1],
+	next_collector_volume:[7..13],
 
 	tank_volume:[19..21],
 	tank_delta_volume_A:[-1..1],
 	tank_delta_volume_B:[-1..1],
 	tank_delta_volume:[-2..2],
+	next_tank_volume:[17..23],
 
 	tap_volume:[0..1]
 	
@@ -25,12 +30,14 @@ constants
 
 axioms
 
-// these two are to reduce the state space... possibly
+// these are to reduce the state space... possibly
 	init_tank_volume:
-		AlwP(pump_start=0) -> tank_volume = TANK_MAX_VOLUME;
+		AlwP(start=0) -> tank_volume = TANK_MAX_VOLUME;
 	init_collector_volume:
-		AlwP(pump_start=0) -> collector_volume = COLLECTOR_MAX_VOLUME;
-	
+		AlwP(start=0) -> collector_volume = COLLECTOR_MAX_VOLUME;
+	initialize:
+		(AlwP(start=0) -> start=1) & SomP(start=0);
+
 	controller_start:
 		UpToNow(pump_off=1) & (delta_temp = DELTA_HIGH) <-> pump_start=1;
 	
@@ -61,8 +68,8 @@ axioms
 	tap_when_on:
 		tap_on=1 -> tap_volume = TAP_VOLUME;
 
-		collector_volume_within_bounds: 
-			0 < collector_volume & collector_volume <= COLLECTOR_MAX_VOLUME;
+		next_collector_volume_within_bounds: 
+			0 < next_collector_volume & next_collector_volume <= COLLECTOR_MAX_VOLUME;
 
 		collector_delta_volume_definition:
 			(pump_volume = collector_out_volume -> collector_delta_volume = 0) &
@@ -71,24 +78,24 @@ axioms
 		
 		collector_volume_change:
 			(collector_delta_volume=0 -> (
-				(collector_volume=9 -> Futr(collector_volume=9,1)) &
-				(collector_volume=10 -> Futr(collector_volume=10,1)) &
-				(collector_volume=11 -> Futr(collector_volume=11,1))
+				(collector_volume=9 -> next_collector_volume=9) &
+				(collector_volume=10 -> next_collector_volume=10) &
+				(collector_volume=11 -> next_collector_volume=11)
 			)) &
 			(collector_delta_volume=1 -> (
-				(collector_volume=9 -> Futr(collector_volume=10,1)) &
-				(collector_volume=10 -> Futr(collector_volume=11,1)) &
-				(collector_volume=11 -> Futr(collector_volume=12,1))
+				(collector_volume=9 -> next_collector_volume=10) &
+				(collector_volume=10 -> next_collector_volume=11) &
+				(collector_volume=11 -> next_collector_volume=12)
 			)) &
 			(collector_delta_volume=-1 -> (
-				(collector_volume=9 -> Futr(collector_volume=8,1)) &
-				(collector_volume=10 -> Futr(collector_volume=9,1)) &
-				(collector_volume=11 -> Futr(collector_volume=10,1))
+				(collector_volume=9 -> next_collector_volume=8) &
+				(collector_volume=10 -> next_collector_volume=9) &
+				(collector_volume=11 -> next_collector_volume=10)
 			));
 		
 
-		tank_volume_within_bounds: 
-			0 < tank_volume & tank_volume <= TANK_MAX_VOLUME;
+		next_tank_volume_within_bounds: 
+			0 < next_tank_volume & next_tank_volume <= TANK_MAX_VOLUME;
 
 		tank_delta_volume_A_def:	// collector_out_volume - pump_volume
 			(collector_out_volume = pump_volume -> tank_delta_volume_A = 0) &
@@ -115,35 +122,39 @@ axioms
 
 		tank_volume_change:
 			(tank_delta_volume=0 -> (
-				(tank_volume=19 -> Futr(tank_volume=19,1)) &
-				(tank_volume=20 -> Futr(tank_volume=20,1)) &
-				(tank_volume=21 -> Futr(tank_volume=21,1))
+				(tank_volume=19 -> next_tank_volume=19) &
+				(tank_volume=20 -> next_tank_volume=20) &
+				(tank_volume=21 -> next_tank_volume=21)
 			)) &
 			(tank_delta_volume=1 -> (
-				(tank_volume=19 -> Futr(tank_volume=20,1)) &
-				(tank_volume=20 -> Futr(tank_volume=21,1)) &
-				(tank_volume=21 -> Futr(tank_volume=22,1))
+				(tank_volume=19 -> next_tank_volume=20) &
+				(tank_volume=20 -> next_tank_volume=21) &
+				(tank_volume=21 -> next_tank_volume=22)
 			)) &
 			(tank_delta_volume=-1 -> (
-				(tank_volume=19 -> Futr(tank_volume=18,1)) &
-				(tank_volume=20 -> Futr(tank_volume=19,1)) &
-				(tank_volume=21 -> Futr(tank_volume=20,1))
+				(tank_volume=19 -> next_tank_volume=18) &
+				(tank_volume=20 -> next_tank_volume=19) &
+				(tank_volume=21 -> next_tank_volume=20)
 			)) &
 			(tank_delta_volume=-2 -> (
-				(tank_volume=19 -> Futr(tank_volume=17,1)) &
-				(tank_volume=20 -> Futr(tank_volume=18,1)) &
-				(tank_volume=21 -> Futr(tank_volume=19,1))
+				(tank_volume=19 -> next_tank_volume=17) &
+				(tank_volume=20 -> next_tank_volume=18) &
+				(tank_volume=21 -> next_tank_volume=19)
 			)) &
 			(tank_delta_volume=2 -> (
-				(tank_volume=19 -> Futr(tank_volume=21,1)) &
-				(tank_volume=20 -> Futr(tank_volume=22,1)) &
-				(tank_volume=21 -> Futr(tank_volume=23,1))
+				(tank_volume=19 -> next_tank_volume=21) &
+				(tank_volume=20 -> next_tank_volume=22) &
+				(tank_volume=21 -> next_tank_volume=23)
 			));
 
 		NoLeaks:
-			(tank_volume = 19 -> collector_volume = 11) &
-			(tank_volume = 20 -> collector_volume = 10) &
-			(tank_volume = 21 -> collector_volume = 9);
+			(next_tank_volume = 17 -> next_collector_volume = 13) &
+			(next_tank_volume = 18 -> next_collector_volume = 12) &
+			(next_tank_volume = 19 -> next_collector_volume = 11) &
+			(next_tank_volume = 20 -> next_collector_volume = 10) &
+			(next_tank_volume = 21 -> next_collector_volume = 9) &
+			(next_tank_volume = 22 -> next_collector_volume = 8) &
+			(next_tank_volume = 23 -> next_collector_volume = 7);
 
 // PROPERTIES TO CHECK
 //

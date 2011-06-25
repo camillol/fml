@@ -1,0 +1,74 @@
+#define t0	t0==1
+#define s	s==1
+#define a	a==0
+
+	/*
+	 * Formula As Typed: []  (t0 && s -> a)
+	 * The Never Claim Below Corresponds
+	 * To The Negated Formula !([]  (t0 && s -> a))
+	 * (formalizing violations of the original)
+	 */
+
+never {    /* !([]  (t0 && s -> a)) */
+T0_init:
+	if
+	:: (! ((a)) && (s) && (t0)) -> goto accept_all
+	:: (1) -> goto T0_init
+	fi;
+accept_all:
+	skip
+}
+
+#ifdef NOTES
+Use Load to open a file or a template.
+#endif
+#ifdef RESULT
+warning: for p.o. reduction to be valid the never claim must be stutter-invariant
+(never claims generated from LTL formulae are stutter-invariant)
+depth 0: Claim reached state 5 (line 76)
+pan:1: claim violated! (at depth 16)
+pan: wrote pan_in.trail
+
+(Spin Version 5.2.5 -- 17 April 2010)
+Warning: Search not completed
+	+ Partial Order Reduction
+
+Full statespace search for:
+	never claim         	+
+	assertion violations	+ (if within scope of claim)
+	acceptance   cycles 	+ (fairness disabled)
+	invalid end states	- (disabled by never claim)
+
+State-vector 40 byte, depth reached 18, errors: 1
+       13 states, stored
+        1 states, matched
+       14 transitions (= stored+matched)
+        3 atomic steps
+hash conflicts:         0 (resolved)
+
+Stats on memory usage (in Megabytes):
+    0.001	equivalent memory usage for states (stored*(State-vector + overhead))
+    0.288	actual memory usage for states (unsuccessful compression: 34123.98%)
+         	state-vector as stored = 23176 byte + 28 byte overhead
+    4.000	memory used for hash table (-w19)
+    0.458	memory used for DFS stack (-m10000)
+    4.653	total actual memory usage
+
+unreached in proctype spe
+	line 19, "pan.___", state 4, "i = (i-1)"
+	line 17, "pan.___", state 7, "((i>0))"
+	line 17, "pan.___", state 7, "((i<=0))"
+	line 31, "pan.___", state 21, "s = 0"
+	line 39, "pan.___", state 30, "t0 = 0"
+	line 47, "pan.___", state 39, "-end-"
+	(5 of 39 states)
+unreached in proctype :init:
+	(0 of 2 states)
+unreached in proctype :never:
+	line 81, "pan.___", state 8, "-end-"
+	(1 of 8 states)
+
+pan: elapsed time 0 seconds
+        0.01 real         0.00 user         0.00 sys
+
+#endif
