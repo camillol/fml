@@ -115,19 +115,19 @@ axioms
 
 		tank_volume_change:
 			(Past(tank_delta_volume=0,1) -> (
-				(Past(tank_volume=9,1) -> tank_volume=9) &
-				(Past(tank_volume=10,1) -> tank_volume=10) &
-				(Past(tank_volume=11,1) -> tank_volume=11)
+				(Past(tank_volume=19,1) -> tank_volume=19) &
+				(Past(tank_volume=20,1) -> tank_volume=20) &
+				(Past(tank_volume=21,1) -> tank_volume=21)
 			)) &
 			(Past(tank_delta_volume=1,1) -> (
-				(Past(tank_volume=9,1) -> tank_volume=10) &
-				(Past(tank_volume=10,1) -> tank_volume=11) &
-				(Past(tank_volume=11,1) -> tank_volume=12)
+				(Past(tank_volume=19,1) -> tank_volume=20) &
+				(Past(tank_volume=20,1) -> tank_volume=21) &
+				(Past(tank_volume=21,1) -> tank_volume=22)
 			)) &
 			(Past(tank_delta_volume=-1,1) -> (
-				(Past(tank_volume=9,1) -> tank_volume=8) &
-				(Past(tank_volume=10,1) -> tank_volume=9) &
-				(Past(tank_volume=11,1) -> tank_volume=10)
+				(Past(tank_volume=19,1) -> tank_volume=18) &
+				(Past(tank_volume=20,1) -> tank_volume=19) &
+				(Past(tank_volume=21,1) -> tank_volume=20)
 			));
 
 		NoLeaks:
