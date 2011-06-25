@@ -1,0 +1,6 @@
+verification/*.prm
+verification/*.prm.trail
+verification/pan*
+reports/*.aux
+reports/*.log
+reports/*.synctex.gz
