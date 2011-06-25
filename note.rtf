@@ -14,8 +14,7 @@ assumptions:\
 \
 INCONTRO SPOLETINI:\
 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
-\cf0 sensore ogni minuto\
+sensore ogni minuto\
 \
 TD va bene, ma NON periodo = 1 min \
 \
@@ -52,10 +51,30 @@ things to check for verification:\
 \
 - verify that our implicit enforcement of controller update is sufficient (say comment)\
 - verify that the controller cannot set pump_control(start) and pump_control(stop) at the same time\
+- no leaks\
+- pump must not switch on/off too fast\
+- cannot have too much temp diff between tank and collector\
+- pump cannot get control start and control stop at the same time\
+- se c'\'e8 abbastanza sole, e uno apre l'acqua calda, entro un certo tempo arriva calda\
+\
+-- DA VERIFICARE\
+--		collector_volume_remains_constant:\
+--			memo_volume[1] = volume;\
+		\
+		NoLeaks:\
+			tank.volume + collector.volume = total_volume;\
+		\
 \
 \
-if the tank has hot enough water, and the \
 \
+		collector_volume_change:\
+			collector_volume = old_collector_volume + old_collector_delta_volume;\
+\
+		tank_volume_change:\
+			tank_volume = old_tank_volume + old_tank_delta_volume;\
+		\
+\
+verifichiamo semplicemente che collector_delta_volume sia sempre 0!\
 \
 \
 }

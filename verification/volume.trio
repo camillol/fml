@@ -70,20 +70,20 @@ axioms
 			(pump_volume = 0 & collector_out_volume = 1 -> collector_delta_volume = -1);
 		
 		collector_volume_change:
-			(Past(collector_delta_volume=0,1) -> (
-				(Past(collector_volume=9,1) -> collector_volume=9) &
-				(Past(collector_volume=10,1) -> collector_volume=10) &
-				(Past(collector_volume=11,1) -> collector_volume=11)
+			(collector_delta_volume=0 -> (
+				(collector_volume=9 -> Futr(collector_volume=9,1)) &
+				(collector_volume=10 -> Futr(collector_volume=10,1)) &
+				(collector_volume=11 -> Futr(collector_volume=11,1))
 			)) &
-			(Past(collector_delta_volume=1,1) -> (
-				(Past(collector_volume=9,1) -> collector_volume=10) &
-				(Past(collector_volume=10,1) -> collector_volume=11) &
-				(Past(collector_volume=11,1) -> collector_volume=12)
+			(collector_delta_volume=1 -> (
+				(collector_volume=9 -> Futr(collector_volume=10,1)) &
+				(collector_volume=10 -> Futr(collector_volume=11,1)) &
+				(collector_volume=11 -> Futr(collector_volume=12,1))
 			)) &
-			(Past(collector_delta_volume=-1,1) -> (
-				(Past(collector_volume=9,1) -> collector_volume=8) &
-				(Past(collector_volume=10,1) -> collector_volume=9) &
-				(Past(collector_volume=11,1) -> collector_volume=10)
+			(collector_delta_volume=-1 -> (
+				(collector_volume=9 -> Futr(collector_volume=8,1)) &
+				(collector_volume=10 -> Futr(collector_volume=9,1)) &
+				(collector_volume=11 -> Futr(collector_volume=10,1))
 			));
 		
 
@@ -114,20 +114,20 @@ axioms
 			));
 
 		tank_volume_change:
-			(Past(tank_delta_volume=0,1) -> (
-				(Past(tank_volume=19,1) -> tank_volume=19) &
-				(Past(tank_volume=20,1) -> tank_volume=20) &
-				(Past(tank_volume=21,1) -> tank_volume=21)
+			(tank_delta_volume=0 -> (
+				(tank_volume=19 -> Futr(tank_volume=19,1)) &
+				(tank_volume=20 -> Futr(tank_volume=20,1)) &
+				(tank_volume=21 -> Futr(tank_volume=21,1))
 			)) &
-			(Past(tank_delta_volume=1,1) -> (
-				(Past(tank_volume=19,1) -> tank_volume=20) &
-				(Past(tank_volume=20,1) -> tank_volume=21) &
-				(Past(tank_volume=21,1) -> tank_volume=22)
+			(tank_delta_volume=1 -> (
+				(tank_volume=19 -> Futr(tank_volume=20,1)) &
+				(tank_volume=20 -> Futr(tank_volume=21,1)) &
+				(tank_volume=21 -> Futr(tank_volume=22,1))
 			)) &
-			(Past(tank_delta_volume=-1,1) -> (
-				(Past(tank_volume=19,1) -> tank_volume=18) &
-				(Past(tank_volume=20,1) -> tank_volume=19) &
-				(Past(tank_volume=21,1) -> tank_volume=20)
+			(tank_delta_volume=-1 -> (
+				(tank_volume=19 -> Futr(tank_volume=18,1)) &
+				(tank_volume=20 -> Futr(tank_volume=19,1)) &
+				(tank_volume=21 -> Futr(tank_volume=20,1))
 			));
 
 		NoLeaks:
