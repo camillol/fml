@@ -128,6 +128,16 @@ axioms
 				(tank_volume=19 -> Futr(tank_volume=18,1)) &
 				(tank_volume=20 -> Futr(tank_volume=19,1)) &
 				(tank_volume=21 -> Futr(tank_volume=20,1))
+			)) &
+			(tank_delta_volume=-2 -> (
+				(tank_volume=19 -> Futr(tank_volume=17,1)) &
+				(tank_volume=20 -> Futr(tank_volume=18,1)) &
+				(tank_volume=21 -> Futr(tank_volume=19,1))
+			)) &
+			(tank_delta_volume=2 -> (
+				(tank_volume=19 -> Futr(tank_volume=21,1)) &
+				(tank_volume=20 -> Futr(tank_volume=22,1)) &
+				(tank_volume=21 -> Futr(tank_volume=23,1))
 			));
 
 		NoLeaks:
