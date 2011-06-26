@@ -1,0 +1,61 @@
+\documentclass[a4paper,12pt]{article}
+%\usepackage[pdftex]{graphicx}
+\usepackage[xetex]{graphicx}
+%\usepackage{graphviz}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{moreverb}
+\usepackage{fancyvrb}
+%\usepackage[utf8]{inputenc}
+\usepackage{fontspec}
+\usepackage[strict]{changepage}
+\begin{document}
+
+\title{Formal Methods Homework 2011\\
+Solar Heating System Verification}
+\author{Lyudmil Angelov\\
+Davide Leonarduzzi\\
+Camillo Lugaresi}
+\date{2011/06/24}
+\maketitle
+
+\section{Introduction}
+
+We decided to perform verification of some properties of our system using Trio2Promela (T2P in the rest of this document). The process involved a number of interesting challenges, mainly stemming from the fact that the current version of T2P is geared towards a different subset of Trio than what we are using. We will document the main adaptations we performed on our initial formulation in order to make it verifiable with T2P and Spin.
+
+\section{Physical properties}
+
+In our formalization of the system, we chose to use Trio to model both its physical and its logical behavior. Moreover, we attempted to minimize the number of axioms used. As a result, there are some important physical properties which are not directly included as axioms, but follow as theorems from the axioms we did include. Therefore, we would like to use model checking to show that our axioms are indeed sufficient to prove the necessary properties.
+
+\subsection{Arithmetic}
+
+The published grammar of T2P, as well as the program's parser, allow axioms to contains mathematical expressions involving variables. Unfortunately, we soon discovered that the Promela generator had different plans: whenever an identifier occurred as an operand to an arithmetic operator, it blithely attempted to parse it as a literal numeric constant, resulting in an exception.
+
+Fortunately, it is still possible to simulate arithmetic over very small domains using logic. However, the axioms involving temperature were too complex to be translated in that way, and so we had to drop them. We were, however, still able to verify some properties involving volumes.
+
+\subsection{Volumes}
+
+In our modeling of the hydraulic part of the system, we decided that connections between components should match their physical connections in reality. Therefore, the pump, which pumps water from the tank into the collector, is connected to an exit port of the former and to the entry port of the latter; but the circuit is closed by connecting the exit port of the collector to an entry port of the tank, and the flow in this pipe is not driver directly by the pump. Instead, since the tank and the collector start out full \footnote{while producing the original document, the fact that the constant total\_volume should be equal to the sum of the max\_volume of the tank and the collector may have been left on the editing floor; it will, however, be made explicit here.} and must remain so (leaks are disallowed by an axiom), it follows that the variation of the volume of water in each container must be zero, from which follows that the volume flowing in the collector-tank pipe is the same as that flowing in the tank-pump-collector pipe.
+
+In our original formulation, the volume and temperature deltas calculated on the basis of the current state of the system were added to the current volume and temperature to produce the values of V and T at the following instant. As a result, the volume deltas had to be zero because a non-zero value would have necessarily caused a violation of the maximum volume and no-leaks axioms at the following time instant.
+
+This means that this property cannot be verified by simply checking the LTL property $\Box  (t_0 \wedge s \rightarrow delta\_volume=0)$ , because if $delta\_volume \neq 0$, $s$ does not become false until the next cycle. Instead, we need to use the method for verifying metric properties.
+
+We use the LTL property $\Diamond (t_0 \wedge \neg s)$ ; this states that (for all possible paths) eventually a state is reached where the axioms cannot be satisfied. First we need to ensure that this property is invalid when checking the base trio specification: this tells us that our axioms are not contradictory, that is, it is possible to have at least one history where they are always satisfied. Then we add the negation of the property to be verified to the model, and check the LTL property again with this new axiom. If this time the LTL property is valid, it means that negating the property eliminated all possible histories of the system, which means that it holds in all of them.
+
+\begin{adjustwidth}{-4em}{-4em}
+\VerbatimInput[frame=lines, obeytabs=true, tabsize=2, label=\fbox{volume4.trio},framesep=4mm]{../verification/volume4.trio}
+\end{adjustwidth}
+
+As mentioned in the comments at the bottom, we ran into a strange problem where T2P would silently ignore axioms of the form $a = b$ or $a \neq b$. The workaround was to prepend them with $1=1\rightarrow$.
+
+\section{Logical properties}
+
+According to the specification, the controller checks the temperatures periodically and, at that time, starts or stops the pump according to the difference. In our formalization, this behavior is implicit in the fact that the temperature readings are only updated when the update timer fires.
+We can verify that this property holds, using the same method as before.
+
+\begin{adjustwidth}{-4em}{-4em}
+\VerbatimInput[frame=lines, obeytabs=true, tabsize=2, label=\fbox{control2.trio},framesep=4mm]{../verification/control2.trio}
+\end{adjustwidth}
+
+\end{document}
