@@ -1,6 +1,4 @@
 variables
-	start:[0..1],
-
 	pump_start:[0..1], pump_stop:[0..1], pump_on:[0..1], pump_off:[0..1],
 	tap_on:[0..1],
 
@@ -11,18 +9,18 @@ variables
 	tank_temperature:[1..5],
 
 	update:[0..1]
-	
 
 constants
-	DELTA_LOW = 0, DELTA_MEDIUM = 1, DELTA_HIGH = 2, PUMP_VOLUME=1, COLD_SUPPLY_TEMPERATURE=1, TAP_VOLUME=1,
-	COLLECTOR_MAX_VOLUME=10, WATER_SPECIFIC_HEAT=1, WATER_DENSITY=1, TANK_MAX_VOLUME=20,
-				POLLING_INTERVAL=3, TOTAL_VOLUME=30
+	DELTA_LOW = 0, DELTA_MEDIUM = 1, DELTA_HIGH = 2, PUMP_VOLUME=1,
+	COLD_SUPPLY_TEMPERATURE=1, TAP_VOLUME=1, COLLECTOR_MAX_VOLUME=10,
+	WATER_SPECIFIC_HEAT=1, WATER_DENSITY=1, TANK_MAX_VOLUME=20,
+	POLLING_INTERVAL=3, TOTAL_VOLUME=30
 
 axioms
 
 	controller_define_delta:
 		(temp_collector = 5 -> (
-			((temp_tank = 1 | temp_tank = 2 | temp_tank = 3) -> delta_temp = DELTA_HIGH) &
+			((temp_tank <= 3) -> delta_temp = DELTA_HIGH) &
 			((temp_tank = 4) -> delta_temp = DELTA_MEDIUM) &
 			((temp_tank = 5) -> delta_temp = DELTA_LOW)
 		)) &
@@ -34,11 +32,11 @@ axioms
 		(temp_collector = 3 -> (
 			((temp_tank = 1) -> delta_temp = DELTA_HIGH) &
 			((temp_tank = 2) -> delta_temp = DELTA_MEDIUM) &
-			((temp_tank = 3 | temp_tank = 4 | temp_tank = 5) -> delta_temp = DELTA_LOW)
+			((temp_tank >= 3) -> delta_temp = DELTA_LOW)
 		)) &
 		(temp_collector = 2 -> (
 			((temp_tank = 1) -> delta_temp = DELTA_MEDIUM) &
-			((temp_tank = 2 | temp_tank = 3 | temp_tank = 4 | temp_tank = 5) -> delta_temp = DELTA_LOW)
+			((temp_tank > 1) -> delta_temp = DELTA_LOW)
 		)) &
 		(temp_collector = 1 -> delta_temp = DELTA_LOW);
 	
@@ -99,5 +97,5 @@ axioms
 // properties to check:
 // 	pump_start | pump_stop -> update
 
-controller_acts_on_update:
-	(pump_start=1 | pump_stop=1) & update=0;
+	controller_acts_on_update:
+		(pump_start=1 | pump_stop=1) & update=0;
