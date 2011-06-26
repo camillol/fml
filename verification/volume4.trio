@@ -1,0 +1,136 @@
+variables
+	start:[0..1],
+
+	pump_volume:[0..1],
+
+	collector_volume:[9..11],
+	collector_out_volume:[0..1],
+	collector_delta_volume:[-1..1],
+
+	tank_volume:[19..21],
+	tank_delta_volume_A:[-1..1],
+	tank_delta_volume_B:[-1..1],
+	tank_delta_volume:[-2..2],
+
+	tap_volume:[0..1]
+	
+
+constants
+	DELTA_LOW = 0, DELTA_MEDIUM = 1, DELTA_HIGH = 2, PUMP_VOLUME=1, COLD_SUPPLY_TEMPERATURE=1, TAP_VOLUME=1,
+	COLLECTOR_MAX_VOLUME=10, WATER_SPECIFIC_HEAT=1, WATER_DENSITY=1, TANK_MAX_VOLUME=20,
+				POLLING_INTERVAL=3, TOTAL_VOLUME=30
+
+axioms
+
+		collector_volume_within_bounds: 
+			0 < collector_volume & collector_volume <= COLLECTOR_MAX_VOLUME;
+
+		collector_delta_volume_definition:
+			(pump_volume = collector_out_volume -> collector_delta_volume = 0) &
+			(pump_volume = 1 & collector_out_volume = 0 -> collector_delta_volume = 1) &
+			(pump_volume = 0 & collector_out_volume = 1 -> collector_delta_volume = -1);
+		
+		collector_volume_change:
+			(Past(collector_delta_volume=0,1) -> (
+				(Past(collector_volume=9,1) -> collector_volume=9) &
+				(Past(collector_volume=10,1) -> collector_volume=10) &
+				(Past(collector_volume=11,1) -> collector_volume=11)
+			)) &
+			(Past(collector_delta_volume=1,1) -> (
+				(Past(collector_volume=9,1) -> collector_volume=10) &
+				(Past(collector_volume=10,1) -> collector_volume=11) &
+				(Past(collector_volume=11,1) -> collector_volume=12)
+			)) &
+			(Past(collector_delta_volume=-1,1) -> (
+				(Past(collector_volume=9,1) -> collector_volume=8) &
+				(Past(collector_volume=10,1) -> collector_volume=9) &
+				(Past(collector_volume=11,1) -> collector_volume=10)
+			));
+		
+
+		tank_volume_within_bounds: 
+			0 < tank_volume & tank_volume <= TANK_MAX_VOLUME;
+
+		tank_delta_volume_A_def:	// collector_out_volume - pump_volume
+			(collector_out_volume = pump_volume -> tank_delta_volume_A = 0) &
+			(collector_out_volume > pump_volume -> tank_delta_volume_A = 1) &
+			(collector_out_volume < pump_volume -> tank_delta_volume_A = -1);
+
+		tank_delta_volume_B_def:	// tap_volume - tap_volume
+			(tap_volume = tap_volume -> tank_delta_volume_B = 0) &
+			(tap_volume > tap_volume -> tank_delta_volume_B = 1) &
+			(tap_volume < tap_volume -> tank_delta_volume_B = -1);
+
+		tank_delta_volume_definition:	// tank_delta_volume_A + tank_delta_volume_B
+			(tank_delta_volume_A = 0 -> (tank_delta_volume = tank_delta_volume_B)) &
+			(tank_delta_volume_A = 1 -> (
+				(tank_delta_volume_B = -1 -> tank_delta_volume = 0) &
+				(tank_delta_volume_B = 0 -> tank_delta_volume = 1) &
+				(tank_delta_volume_B = 1 -> tank_delta_volume = 2)
+			)) &
+			(tank_delta_volume_A = -1 -> (
+				(tank_delta_volume_B = -1 -> tank_delta_volume = -2) &
+				(tank_delta_volume_B = 0 -> tank_delta_volume = -1) &
+				(tank_delta_volume_B = 1 -> tank_delta_volume = 0)
+			));
+
+		tank_volume_change:
+			(Past(tank_delta_volume=0,1) -> (
+				(Past(tank_volume=19,1) -> tank_volume=19) &
+				(Past(tank_volume=20,1) -> tank_volume=20) &
+				(Past(tank_volume=21,1) -> tank_volume=21)
+			)) &
+			(Past(tank_delta_volume=1,1) -> (
+				(Past(tank_volume=19,1) -> tank_volume=20) &
+				(Past(tank_volume=20,1) -> tank_volume=21) &
+				(Past(tank_volume=21,1) -> tank_volume=22)
+			)) &
+			(Past(tank_delta_volume=-1,1) -> (
+				(Past(tank_volume=19,1) -> tank_volume=18) &
+				(Past(tank_volume=20,1) -> tank_volume=19) &
+				(Past(tank_volume=21,1) -> tank_volume=20)
+			)) &
+			(Past(tank_delta_volume=-2,1) -> (
+				(Past(tank_volume=19,1) -> tank_volume=17) &
+				(Past(tank_volume=20,1) -> tank_volume=18) &
+				(Past(tank_volume=21,1) -> tank_volume=19)
+			)) &
+			(Past(tank_delta_volume=2,1) -> (
+				(Past(tank_volume=19,1) -> tank_volume=21) &
+				(Past(tank_volume=20,1) -> tank_volume=22) &
+				(Past(tank_volume=21,1) -> tank_volume=23)
+			));
+
+		NoLeaks:
+			(tank_volume = 17 -> collector_volume = 13) &
+			(tank_volume = 18 -> collector_volume = 12) &
+			(tank_volume = 19 -> collector_volume = 11) &
+			(tank_volume = 20 -> collector_volume = 10) &
+			(tank_volume = 21 -> collector_volume = 9) &
+			(tank_volume = 22 -> collector_volume = 8) &
+			(tank_volume = 23 -> collector_volume = 7);
+
+// PROPERTIES TO CHECK
+//
+// we want to prove that, when the pump is active, the flow in the tank->pump pipe, pump->collector
+// pipe, and collector-> tank pipe is the same. in the original system this is a consequence of the
+// noleaks axiom, which (assuming total_volume = max_tank_volume + max_collector_volume) forces
+// delta_volume=0, which forces in_volume = out_volume.
+//
+// here we need to do things differently because we don't have arithmetic. furthermore, T2P is
+// unable to check that a given state would necessarily lead to contradicting an axiom in the next
+// state; therefore we have to flatten the conditions into the present, using the next_ variables.
+//
+// property to check:
+// 		collector_delta_volume=0
+//		tank_delta_volume=0
+
+//collector_delta_volume_zero:
+//	1=1 -> collector_delta_volume<>0;
+
+// note that we cannot simply write "not( collector_delta_volume = 0 )" because that axiom gets
+// silently ignored by t2p.
+
+// tank_delta_volume_zero:
+//	1=1 -> tank_delta_volume<>0;
+

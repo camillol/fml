@@ -1,0 +1,26 @@
+#define t0	t0==1
+#define s	s==1
+
+	/*
+	 * Formula As Typed: <> (t0 && !(s))
+	 * The Never Claim Below Corresponds
+	 * To The Negated Formula !(<> (t0 && !(s)))
+	 * (formalizing violations of the original)
+	 */
+
+never {    /* !(<> (t0 && !(s))) */
+accept_init:
+T0_init:
+	if
+	:: (((! ((t0))) || ((s)))) -> goto T0_init
+	fi;
+}
+
+#ifdef NOTES
+Use Load to open a file or a template.
+
+#endif
+#ifdef RESULT
+
+
+#endif
