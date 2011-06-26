@@ -1,0 +1,66 @@
+#define t0	t0==1
+#define s	s==1
+
+	/*
+	 * Formula As Typed: <> (t0 && !(s))
+	 * The Never Claim Below Corresponds
+	 * To The Negated Formula !(<> (t0 && !(s)))
+	 * (formalizing violations of the original)
+	 */
+
+never {    /* !(<> (t0 && !(s))) */
+accept_init:
+T0_init:
+	if
+	:: (((! ((t0))) || ((s)))) -> goto T0_init
+	fi;
+}
+
+#ifdef NOTES
+Use Load to open a file or a template.
+
+#endif
+#ifdef RESULT
+warning: for p.o. reduction to be valid the never claim must be stutter-invariant
+(never claims generated from LTL formulae are stutter-invariant)
+depth 0: Claim reached state 3 (line 88)
+
+(Spin Version 5.2.5 -- 17 April 2010)
+	+ Partial Order Reduction
+
+Full statespace search for:
+	never claim         	+
+	assertion violations	+ (if within scope of claim)
+	acceptance   cycles 	+ (fairness disabled)
+	invalid end states	- (disabled by never claim)
+
+State-vector 40 byte, depth reached 42, errors: 0
+       53 states, stored (106 visited)
+       45 states, matched
+      151 transitions (= visited+matched)
+       16 atomic steps
+hash conflicts:         0 (resolved)
+
+Stats on memory usage (in Megabytes):
+    0.003	equivalent memory usage for states (stored*(State-vector + overhead))
+    0.287	actual memory usage for states (unsuccessful compression: 8337.40%)
+         	state-vector as stored = 5641 byte + 28 byte overhead
+    4.000	memory used for hash table (-w19)
+    0.458	memory used for DFS stack (-m10000)
+    4.653	total actual memory usage
+
+unreached in proctype spe
+	line 19, "pan.___", state 4, "i = (i-1)"
+	line 51, "pan.___", state 44, "t0 = 0"
+	line 59, "pan.___", state 53, "-end-"
+	(3 of 53 states)
+unreached in proctype :init:
+	(0 of 2 states)
+unreached in proctype :never:
+	line 90, "pan.___", state 5, "-end-"
+	(1 of 5 states)
+
+pan: elapsed time 0 seconds
+        0.01 real         0.00 user         0.00 sys
+
+#endif

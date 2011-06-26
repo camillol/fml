@@ -1,0 +1,21 @@
+variables
+	a:[0..1],
+	b:[0..1]
+
+axioms
+	x:
+		Past(a=1,1) -> b=1;
+	y:
+//		b <> 1;
+		1=1 -> b <> 1;
+
+// prop to check: a = 0
+	z:
+//		a <> 0;
+		1=1 -> a <> 0;
+
+// this way s must eventually become 0
+// if a is 0, z fails
+// if a is 1, at the next cycle b is 1 and y fails
+
+// there's the usual weird problem where a simple "a <> 0" is ignored by t2p!
