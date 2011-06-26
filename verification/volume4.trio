@@ -1,6 +1,4 @@
 variables
-	start:[0..1],
-
 	pump_volume:[0..1],
 
 	collector_volume:[9..11],
@@ -16,9 +14,10 @@ variables
 	
 
 constants
-	DELTA_LOW = 0, DELTA_MEDIUM = 1, DELTA_HIGH = 2, PUMP_VOLUME=1, COLD_SUPPLY_TEMPERATURE=1, TAP_VOLUME=1,
-	COLLECTOR_MAX_VOLUME=10, WATER_SPECIFIC_HEAT=1, WATER_DENSITY=1, TANK_MAX_VOLUME=20,
-				POLLING_INTERVAL=3, TOTAL_VOLUME=30
+	DELTA_LOW = 0, DELTA_MEDIUM = 1, DELTA_HIGH = 2, PUMP_VOLUME=1,
+	COLD_SUPPLY_TEMPERATURE=1, TAP_VOLUME=1, COLLECTOR_MAX_VOLUME=10,
+	WATER_SPECIFIC_HEAT=1, WATER_DENSITY=1, TANK_MAX_VOLUME=20,
+	POLLING_INTERVAL=3, TOTAL_VOLUME=30
 
 axioms
 
@@ -112,25 +111,24 @@ axioms
 
 // PROPERTIES TO CHECK
 //
-// we want to prove that, when the pump is active, the flow in the tank->pump pipe, pump->collector
-// pipe, and collector-> tank pipe is the same. in the original system this is a consequence of the
-// noleaks axiom, which (assuming total_volume = max_tank_volume + max_collector_volume) forces
-// delta_volume=0, which forces in_volume = out_volume.
+// we want to prove that, when the pump is active, the flow in the tank->pump pipe,
+// pump->collector pipe, and collector-> tank pipe is the same. in the original
+// formulation this is a consequence of the noleaks axiom, which (assuming
+// total_volume = max_tank_volume + max_collector_volume) forces delta_volume=0,
+// which forces in_volume = out_volume.
 //
-// here we need to do things differently because we don't have arithmetic. furthermore, T2P is
-// unable to check that a given state would necessarily lead to contradicting an axiom in the next
-// state; therefore we have to flatten the conditions into the present, using the next_ variables.
+// here we need to do things a bit differently because we don't have arithmetic.
 //
-// property to check:
+// properties to check:
 // 		collector_delta_volume=0
 //		tank_delta_volume=0
 
-//collector_delta_volume_zero:
-//	1=1 -> collector_delta_volume<>0;
+//	collector_delta_volume_zero:
+//		1=1 -> collector_delta_volume<>0;
 
-// note that we cannot simply write "not( collector_delta_volume = 0 )" because that axiom gets
-// silently ignored by t2p.
+//	tank_delta_volume_zero:
+//		1=1 -> tank_delta_volume<>0;
 
-// tank_delta_volume_zero:
-//	1=1 -> tank_delta_volume<>0;
-
+// note that we cannot simply write "not( collector_delta_volume = 0 )" because
+// that axiom gets silently ignored by t2p (it's simply missing from the generated
+// promela code.
